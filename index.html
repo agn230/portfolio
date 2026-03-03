@@ -110,76 +110,6 @@
       color: var(--muted);
     }
 
-    .claude-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: var(--radius-pill);
-      border: 1px solid rgba(79, 140, 255, 0.45);
-      background: radial-gradient(circle at top left, rgba(79,140,255,0.16), transparent 60%);
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .claude-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 20%, #ffffff 0, #4f8cff 60%);
-      box-shadow: 0 0 8px rgba(79, 140, 255, 0.9);
-    }
-
-    .api-key-input {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(11, 16, 32, 0.9);
-      border-radius: var(--radius-pill);
-      padding: 6px 10px 6px 12px;
-      border: 1px solid var(--border-subtle);
-    }
-
-    .api-key-input input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-size: 12px;
-    }
-
-    .api-key-input input::placeholder {
-      color: rgba(154, 164, 198, 0.7);
-    }
-
-    .pill-btn {
-      border-radius: var(--radius-pill);
-      border: none;
-      padding: 6px 10px;
-      font-size: 11px;
-      font-weight: 500;
-      background: var(--accent-soft);
-      color: var(--accent);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.12s ease;
-      box-shadow: 0 0 0 rgba(79, 140, 255, 0);
-    }
-
-    .pill-btn:hover {
-      background: rgba(79, 140, 255, 0.24);
-      transform: translateY(-0.5px);
-      box-shadow: 0 8px 20px rgba(79, 140, 255, 0.25);
-    }
-
-    .pill-btn:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 8px rgba(79, 140, 255, 0.2);
-    }
-
     .table-wrapper {
       flex: 1;
       display: flex;
@@ -532,6 +462,12 @@
       color: var(--success);
       font-weight: 600;
       font-variant-numeric: tabular-nums;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .odds-main.odds-updated {
+      transform: scale(1.08);
+      color: #7ee4b4;
     }
 
     .odds-label {
@@ -792,20 +728,8 @@
     <section class="table-panel">
       <header class="header">
         <div class="title-group">
-          <div class="title">
-            Poker Tutor
-            <span class="claude-badge">
-              <span class="claude-dot"></span>
-              Claude-powered coach
-            </span>
-          </div>
-          <div class="title-pill">Practice no-limit Texas Hold'em decisions with live odds.</div>
-        </div>
-        <div class="api-key-input">
-          <input id="apiKeyInput" type="password" placeholder="Claude API key (optional for tutor)" />
-          <button id="saveKeyBtn" class="pill-btn" type="button">
-            Save
-          </button>
+          <div class="title">Poker Tutor</div>
+          <div class="title-pill">Practice no-limit Texas Hold'em with a rules-based coach and live odds.</div>
         </div>
       </header>
 
@@ -872,31 +796,18 @@
     <section class="right-panel">
       <div class="tutor-header">
         <div>
-          <div class="tutor-title">
-            Claude Tutor
-            <span class="badge live" id="claudeStatusBadge">Live</span>
-          </div>
-          <div class="tutor-subtitle">
-            Get an explanation of the best move at each stage.
-          </div>
-        </div>
-        <div class="tutor-status" id="tutorStatus">
-          <span class="status-dot"></span>
-          <span id="tutorStatusText">Ready for the next decision</span>
+          <div class="tutor-title">Coach</div>
+          <div class="tutor-subtitle">Advice based on hand strength and pot odds.</div>
         </div>
       </div>
 
       <div class="tutor-body">
         <div class="tutor-stage-tag" id="tutorStageTag">No hand yet</div>
         <div class="tutor-text" id="tutorText">
-          <p>Click <strong>Deal new hand</strong> to start. After every decision, Claude will break down the situation, your equity, and which action is best.</p>
-          <p>Hands are heads-up against two balanced opponents in a cash game at $1 / $2 blinds with $100 stacks.</p>
+          <p>Click <strong>Deal new hand</strong> to start. The coach will suggest the best move using your win probability and pot odds at each street.</p>
+          <p>3-handed cash game, $1 / $2 blinds, $100 stacks. Chips reset each hand.</p>
         </div>
         <div class="tutor-footer">
-          <div class="hint-row">
-            <span>Hands are simulated only for learning – chips reset each hand.</span>
-            <span class="small-muted">Tip: Save your Claude key above to enable commentary.</span>
-          </div>
           <div class="hand-strength">
             Current hand:
             <span class="value" id="handStrengthLabel">—</span>
@@ -905,8 +816,8 @@
       </div>
 
       <div class="decision-log" id="decisionLog">
-        <div class="decision-log-title">Decision review (current session)</div>
-        <div class="small-muted">Play a full hand to see each street, your choice, and whether Claude agreed.</div>
+        <div class="decision-log-title">Decision review (this hand)</div>
+        <div class="small-muted">Each decision is rated Good or Poor based on your equity at that moment.</div>
       </div>
     </section>
   </div>
@@ -952,6 +863,10 @@
 
     function cardToString(card) {
       return card.rank + card.suit;
+    }
+
+    function rankDisplay(rank) {
+      return rank === "T" ? "10" : rank;
     }
 
     function rankIndex(rank) {
@@ -1077,6 +992,12 @@
       return label;
     }
 
+    function getCurrentEquity() {
+      if (state.heroHand.length < 2) return 0;
+      const { winProb } = simulateEquity(state.heroHand, state.community, 2, 450);
+      return winProb;
+    }
+
     function simulateEquity(heroCards, communityCards, numOpponents = 2, iterations = 600) {
       if (heroCards.length !== 2) return { winProb: 0, label: "—" };
       const used = new Set(heroCards.concat(communityCards).map(cardToString));
@@ -1123,6 +1044,104 @@
       return { winProb: equity, label };
     }
 
+    // --- Rules-based coach ---
+    function getCoachAdvice() {
+      if (state.heroHand.length < 2) {
+        return { bestAction: "check", summary: "Deal a hand to get advice.", explanation: "" };
+      }
+      const equity = getCurrentEquity();
+      const pct = Math.round(equity * 100);
+      const pot = state.pot;
+      const stage = state.stage;
+      const betSizeInput = parseInt(el("betSize").value, 10) || 6;
+      const potOdds = pot > 0 ? betSizeInput / (pot + betSizeInput) : 0;
+
+      if (equity >= 0.5) {
+        return {
+          bestAction: "bet",
+          summary: "Strong hand – you have the edge.",
+          explanation: `Your win probability is ${pct}%. With this much equity, betting builds the pot and gets value. Checking is acceptable but leaves money on the table. Folding would be a mistake.`
+        };
+      }
+      if (equity >= 0.38) {
+        return {
+          bestAction: "bet",
+          summary: "Good hand – lean toward betting.",
+          explanation: `You have ${pct}% equity. Betting is positive expected value here; checking is reasonable if you want to pot-control. Don't fold.`
+        };
+      }
+      if (equity >= 0.28) {
+        return {
+          bestAction: "check",
+          summary: "Marginal hand – check to see the next card cheaply.",
+          explanation: `Your equity is ${pct}%. Checking keeps the pot small and lets you reassess on the next street. Betting can be okay in position, but folding is too tight.`
+        };
+      }
+      if (equity >= 0.18) {
+        return {
+          bestAction: "check",
+          summary: "Weak hand – check or fold depending on pot odds.",
+          explanation: `Only ${pct}% equity. If the pot is small, checking to see the next card is fine. If you would need to call a big bet, folding is correct.`
+        };
+      }
+      return {
+        bestAction: "fold",
+        summary: "Very weak – folding is correct.",
+        explanation: `Your win probability is ${pct}%. With this little equity, continuing is negative expected value. Save your chips for better spots.`
+      };
+    }
+
+    function evaluateDecision(entry) {
+      const eq = entry.equity;
+      if (eq == null || typeof eq !== "number") {
+        entry.correct = null;
+        entry.explainer = "";
+        return;
+      }
+      const action = entry.action;
+      if (action === "fold") {
+        if (eq < 0.28) {
+          entry.correct = true;
+          entry.explainer = "Correct fold with low equity.";
+        } else if (eq > 0.45) {
+          entry.correct = false;
+          entry.explainer = "Folding was too tight; you had strong equity.";
+        } else {
+          entry.correct = eq < 0.38;
+          entry.explainer = eq < 0.38 ? "Reasonable fold." : "Marginal – consider continuing.";
+        }
+        return;
+      }
+      if (action === "bet") {
+        if (eq >= 0.35) {
+          entry.correct = true;
+          entry.explainer = "Good bet with sufficient equity.";
+        } else if (eq < 0.22) {
+          entry.correct = false;
+          entry.explainer = "Betting with very low equity is -EV.";
+        } else {
+          entry.correct = true;
+          entry.explainer = "Aggressive but acceptable.";
+        }
+        return;
+      }
+      if (action === "check") {
+        if (eq >= 0.25 && eq <= 0.55) {
+          entry.correct = true;
+          entry.explainer = "Sensible check for this equity.";
+        } else if (eq > 0.58) {
+          entry.correct = false;
+          entry.explainer = "You had strong equity; betting would be better.";
+        } else if (eq < 0.22) {
+          entry.correct = false;
+          entry.explainer = "Very low equity; folding was an option.";
+        } else {
+          entry.correct = true;
+          entry.explainer = "Reasonable check.";
+        }
+      }
+    }
+
     // --- Game state ---
     const STAGES = ["preflop", "flop", "turn", "river", "showdown"];
 
@@ -1138,10 +1157,7 @@
       op1Stack: 100,
       op2Stack: 100,
       lastBet: 0,
-      decisions: [],
-      lastAdvice: null,
-      claudeEnabled: false,
-      tutorBusy: false
+      decisions: []
     };
 
     // --- DOM helpers ---
@@ -1161,9 +1177,6 @@
     const decisionLogEl = el("decisionLog");
     const tutorTextEl = el("tutorText");
     const tutorStageTagEl = el("tutorStageTag");
-    const tutorStatusEl = el("tutorStatus");
-    const tutorStatusTextEl = el("tutorStatusText");
-    const claudeStatusBadgeEl = el("claudeStatusBadge");
 
     // --- Rendering ---
     function renderCard(card, faceDown = false) {
@@ -1177,7 +1190,7 @@
 
       const rankDiv = document.createElement("div");
       rankDiv.className = "card-rank";
-      rankDiv.textContent = card.rank;
+      rankDiv.textContent = rankDisplay(card.rank);
 
       const suitDiv = document.createElement("div");
       suitDiv.className = "card-suit";
@@ -1205,13 +1218,14 @@
         heroCardsEl.appendChild(renderCard(null, true));
       }
 
+      const showOpponentCards = state.stage === "showdown";
       const opp1Count = state.op1Hand.length || 2;
       const opp2Count = state.op2Hand.length || 2;
       for (let i = 0; i < opp1Count; i++) {
-        op1CardsEl.appendChild(renderCard(state.op1Hand[i], true));
+        op1CardsEl.appendChild(renderCard(state.op1Hand[i], !showOpponentCards));
       }
       for (let i = 0; i < opp2Count; i++) {
-        op2CardsEl.appendChild(renderCard(state.op2Hand[i], true));
+        op2CardsEl.appendChild(renderCard(state.op2Hand[i], !showOpponentCards));
       }
 
       state.community.forEach(c => communityEl.appendChild(renderCard(c, false)));
@@ -1248,6 +1262,8 @@
       const pct = Math.round(winProb * 1000) / 10;
       winProbEl.textContent = `${isNaN(pct) ? "--" : pct.toFixed(1)}%`;
       handStrengthLabelEl.textContent = label;
+      winProbEl.classList.add("odds-updated");
+      setTimeout(() => winProbEl.classList.remove("odds-updated"), 300);
     }
 
     function renderDecisions() {
@@ -1276,7 +1292,7 @@
         correctness.className = "decision-correct " + (dec.correct === true ? "good" : dec.correct === false ? "bad" : "");
         const pill = document.createElement("span");
         pill.className = "pill " + (dec.correct === true ? "good" : dec.correct === false ? "bad" : "");
-        pill.textContent = dec.correct === true ? "Good" : dec.correct === false ? "Could improve" : "Pending";
+        pill.textContent = dec.correct === true ? "Good" : dec.correct === false ? "Poor" : "—";
         correctness.appendChild(pill);
         if (dec.explainer) {
           const expl = document.createElement("span");
@@ -1328,10 +1344,9 @@
       state.lastBet = 0;
       state.decisions = [];
       resetActions();
-      tutorStageTagEl.textContent = "Preflop decision";
-      tutorTextEl.innerHTML = "<p>New hand dealt. Consider your opening strategy before the flop. When you're ready, choose an action and Claude will walk you through it.</p>";
       renderHands();
       renderWinProb();
+      updateCoachPanel();
       setButtonsForStage();
     }
 
@@ -1357,6 +1372,8 @@
       renderWinProb();
       if (state.stage === "showdown") {
         finishHand();
+      } else {
+        updateCoachPanel();
       }
       setButtonsForStage();
     }
@@ -1381,10 +1398,12 @@
         result = "loss";
       }
 
+      state.decisions.forEach(evaluateDecision);
+      renderHands();
       const description = describeScore(heroScore);
       tutorTextEl.innerHTML = `
-        <p>Showdown: you hold <strong>${description}</strong> versus two opponents.</p>
-        <p>Result: <strong>${result}</strong>. Review the decision log below to see which streets you navigated well and where Claude suggested alternative lines.</p>
+        <p>Showdown: you hold <strong>${description}</strong>. Result: <strong>${result}</strong>.</p>
+        <p>Review the decision log below – each choice is rated Good or Poor based on your equity at that moment.</p>
       `;
       renderDecisions();
       setButtonsForStage();
@@ -1412,185 +1431,22 @@
         action,
         actionLabel,
         pot: state.pot,
+        equity: state.heroHand.length === 2 ? getCurrentEquity() : null,
         winProbSnapshot: winProbEl.textContent,
         correct: null,
-        explainer: null,
-        bestAction: null
+        explainer: null
       };
       state.decisions.push(entry);
       return entry;
     }
 
-    function markDecisionCorrectness(decision, bestAction, explanation) {
-      decision.bestAction = bestAction;
-      const normalizedBest = bestAction?.toLowerCase?.() ?? "";
-      const normalizedAction = decision.action.toLowerCase();
-      decision.correct = normalizedBest === normalizedAction;
-      decision.explainer = explanation || (decision.correct ? "Matches Claude's recommended line." : `Claude preferred ${bestAction}.`);
-    }
-
-    // --- Claude API integration ---
-    const API_KEY_STORAGE_KEY = "poker_tutor_claude_api_key";
-
-    function loadSavedKey() {
-      try {
-        const stored = localStorage.getItem(API_KEY_STORAGE_KEY);
-        if (stored) {
-          el("apiKeyInput").value = stored;
-          state.claudeEnabled = true;
-          claudeStatusBadgeEl.textContent = "Live";
-          claudeStatusBadgeEl.classList.remove("disabled");
-          claudeStatusBadgeEl.classList.add("live");
-        }
-      } catch (_) {
-        // ignore storage errors
-      }
-    }
-
-    async function callClaudeForAdvice(decisionEntry) {
-      const apiKey = el("apiKeyInput").value.trim();
-      if (!apiKey) {
-        state.claudeEnabled = false;
-        claudeStatusBadgeEl.textContent = "Key required";
-        claudeStatusBadgeEl.classList.remove("live");
-        claudeStatusBadgeEl.classList.add("disabled");
-        tutorStatusTextEl.textContent = "Tutor disabled – add your API key to enable commentary.";
-        tutorStatusEl.querySelector(".status-dot").classList.remove("error");
-        return;
-      }
-
-      state.claudeEnabled = true;
-      claudeStatusBadgeEl.textContent = "Live";
-      claudeStatusBadgeEl.classList.remove("disabled");
-      claudeStatusBadgeEl.classList.add("live");
-
-      if (state.tutorBusy) return;
-      state.tutorBusy = true;
-      tutorStatusTextEl.textContent = "Thinking about this spot…";
-
-      const heroCardsStr = state.heroHand.map(cardToString).join(" ");
-      const boardStr = state.community.length ? state.community.map(cardToString).join(" ") : "(no board yet)";
-      const heroEquity = winProbEl.textContent;
-      const stage = decisionEntry.stageLabel;
-      const pot = state.pot;
-      const betSize = decisionEntry.action === "bet" ? decisionEntry.actionLabel : "n/a";
-
-      const systemPrompt = "You are a world-class poker coach teaching a student how to play 6-max no-limit Texas Hold'em at $1/$2 cash stakes. You always respond in friendly, concise language and provide clear reasoning.";
-
-      const userPrompt = `
-You are helping a student review a single decision in a Texas Hold'em hand.
-
-Game context:
-- Format: 6-max online cash game
-- Stakes: $1/$2 blinds
-- Effective stacks: around $100
-- Opponents: 2 unknown but reasonably competent players
-
-Current situation:
-- Stage: ${stage}
-- Hero hole cards: ${heroCardsStr}
-- Board cards: ${boardStr}
-- Pot size before hero acts: $${pot}
-- Hero estimated equity vs 2 random opponents: ${heroEquity}
-- Hero chosen action: ${decisionEntry.actionLabel}
-
-Your task:
-1. Evaluate whether the hero's chosen action is good, acceptable, or a mistake.
-2. Recommend the single best action now (one of: "check", "bet", "fold").
-3. Explain the reasoning at a level suitable for a motivated intermediate player.
-
-Respond as a compact JSON object ONLY (no extra commentary) with the following fields:
-{
-  "best_action": "check | bet | fold",
-  "quality": "good | acceptable | mistake",
-  "summary": "one-sentence verdict on the hero's action",
-  "explanation": "2–4 sentence explanation of the best line and key concepts"
-}
-`;
-
-      try {
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": apiKey,
-            "anthropic-version": "2023-06-01"
-          },
-          body: JSON.stringify({
-            model: "claude-3-5-sonnet-20241022",
-            max_tokens: 400,
-            temperature: 0.4,
-            system: systemPrompt,
-            messages: [{ role: "user", content: userPrompt }],
-            response_format: { type: "json_object" }
-          })
-        });
-
-        if (!res.ok) {
-          throw new Error("HTTP " + res.status);
-        }
-
-        const data = await res.json();
-        let parsed;
-        try {
-          const text = data.content?.[0]?.text ?? "";
-          parsed = JSON.parse(text);
-        } catch (_) {
-          parsed = null;
-        }
-
-        if (!parsed) {
-          throw new Error("Unexpected response format from Claude");
-        }
-
-        const bestAction = (parsed.best_action || "").toLowerCase();
-        const summary = parsed.summary || "";
-        const explanation = parsed.explanation || "";
-
-        tutorTextEl.innerHTML = `
-          <p><strong>${summary}</strong></p>
-          <p>${explanation}</p>
-        `;
-
-        markDecisionCorrectness(decisionEntry, bestAction, explanation);
-        renderDecisions();
-
-        tutorStatusTextEl.textContent = "Advice updated for this street.";
-        tutorStatusEl.querySelector(".status-dot").classList.remove("error");
-      } catch (err) {
-        console.error("Claude API error", err);
-        tutorStatusTextEl.textContent = "Error calling Claude – check your API key or CORS.";
-        tutorStatusEl.querySelector(".status-dot").classList.add("error");
-        claudeStatusBadgeEl.textContent = "Error";
-        claudeStatusBadgeEl.classList.remove("live");
-        claudeStatusBadgeEl.classList.add("disabled");
-      } finally {
-        state.tutorBusy = false;
-      }
+    function updateCoachPanel() {
+      const advice = getCoachAdvice();
+      tutorStageTagEl.textContent = state.stage === "idle" || state.stage === "showdown" ? "No hand yet" : currentStageLabel() + " – recommended: " + advice.bestAction;
+      tutorTextEl.innerHTML = "<p><strong>" + advice.summary + "</strong></p>" + (advice.explanation ? "<p>" + advice.explanation + "</p>" : "");
     }
 
     // --- Event handlers ---
-    el("saveKeyBtn").addEventListener("click", () => {
-      const key = el("apiKeyInput").value.trim();
-      if (!key) {
-        try { localStorage.removeItem(API_KEY_STORAGE_KEY); } catch (_) {}
-        tutorStatusTextEl.textContent = "API key cleared – tutor disabled.";
-        claudeStatusBadgeEl.textContent = "Key required";
-        claudeStatusBadgeEl.classList.remove("live");
-        claudeStatusBadgeEl.classList.add("disabled");
-        return;
-      }
-      try {
-        localStorage.setItem(API_KEY_STORAGE_KEY, key);
-        tutorStatusTextEl.textContent = "API key saved – tutor ready.";
-        claudeStatusBadgeEl.textContent = "Live";
-        claudeStatusBadgeEl.classList.remove("disabled");
-        claudeStatusBadgeEl.classList.add("live");
-      } catch (_) {
-        tutorStatusTextEl.textContent = "Could not persist key (storage issue).";
-      }
-    });
-
     el("dealBtn").addEventListener("click", () => {
       startHand();
     });
@@ -1600,11 +1456,10 @@ Respond as a compact JSON object ONLY (no extra commentary) with the following f
       heroActionEl.textContent = "Check";
       op1ActionEl.textContent = "Check";
       op2ActionEl.textContent = "Check";
-      const entry = recordDecision("check", 0);
+      recordDecision("check", 0);
       revealNextStreet();
-      if (state.stage !== "showdown") {
-        callClaudeForAdvice(entry);
-      }
+      renderWinProb();
+      updateCoachPanel();
     });
 
     el("betBtn").addEventListener("click", () => {
@@ -1613,15 +1468,14 @@ Respond as a compact JSON object ONLY (no extra commentary) with the following f
       const size = isNaN(raw) || raw <= 0 ? 6 : raw;
       const actualBet = Math.min(size, state.heroStack);
       state.heroStack -= actualBet;
-      state.pot += actualBet * 3; // very simplified: everyone calls
+      state.pot += actualBet * 3;
       heroActionEl.textContent = `Bet $${actualBet}`;
       op1ActionEl.textContent = "Call";
       op2ActionEl.textContent = "Call";
-      const entry = recordDecision("bet", actualBet);
+      recordDecision("bet", actualBet);
       revealNextStreet();
-      if (state.stage !== "showdown") {
-        callClaudeForAdvice(entry);
-      }
+      renderWinProb();
+      updateCoachPanel();
     });
 
     el("foldBtn").addEventListener("click", () => {
@@ -1629,19 +1483,17 @@ Respond as a compact JSON object ONLY (no extra commentary) with the following f
       heroActionEl.textContent = "Fold";
       op1ActionEl.textContent = "Wins pot";
       op2ActionEl.textContent = "";
-      const entry = recordDecision("fold", 0);
+      recordDecision("fold", 0);
       state.stage = "showdown";
+      state.decisions.forEach(evaluateDecision);
       tutorStageTagEl.textContent = "Hand folded";
-      tutorTextEl.innerHTML = `
-        <p>You chose to fold before showdown. Claude will evaluate whether this was a disciplined laydown or a missed opportunity.</p>
-      `;
+      tutorTextEl.innerHTML = "<p>You folded. Review your decisions below – each is rated Good or Poor based on your equity at that moment.</p>";
       setButtonsForStage();
       renderHands();
-      callClaudeForAdvice(entry);
+      renderDecisions();
     });
 
     // Initial render
-    loadSavedKey();
     renderHands();
     renderWinProb();
     renderDecisions();
