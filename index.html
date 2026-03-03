@@ -30,6 +30,8 @@
 
     body {
       min-height: 100vh;
+      width: 100%;
+      margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
         "Inter", sans-serif;
       color: var(--text);
@@ -39,17 +41,13 @@
         var(--bg);
       display: flex;
       align-items: stretch;
-      justify-content: center;
-      padding: 24px;
+      justify-content: stretch;
     }
 
     .app-shell {
       width: 100%;
-      max-width: 1200px;
+      min-width: 0;
       background: rgba(5, 8, 18, 0.95);
-      border-radius: 22px;
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(255, 255, 255, 0.04);
       display: grid;
       grid-template-columns: minmax(0, 3fr) minmax(320px, 2.3fr);
       gap: 0;
@@ -58,9 +56,6 @@
     }
 
     @media (max-width: 880px) {
-      body {
-        padding: 12px;
-      }
       .app-shell {
         grid-template-columns: minmax(0, 1fr);
       }
@@ -609,13 +604,16 @@
     }
 
     .decision-log {
+      flex: 1;
+      min-height: 220px;
       margin-top: 4px;
       border-radius: var(--radius-md);
       border: 1px solid rgba(255, 255, 255, 0.06);
       background: rgba(8, 14, 34, 0.92);
-      padding: 8px 10px 7px;
-      max-height: 140px;
+      padding: 10px 12px;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     .decision-log-title {
@@ -623,16 +621,16 @@
       text-transform: uppercase;
       letter-spacing: 0.14em;
       color: var(--muted);
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
 
     .decision-entry {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr;
-      gap: 4px 8px;
+      grid-template-columns: 1fr 1fr 0.8fr 1.2fr;
+      gap: 8px 10px;
       align-items: center;
-      font-size: 11px;
-      padding: 4px 0;
+      font-size: 12px;
+      padding: 8px 0;
       border-bottom: 1px dashed rgba(38, 50, 90, 0.9);
     }
 
@@ -647,6 +645,20 @@
     .decision-action {
       font-weight: 500;
       color: var(--text);
+    }
+
+    .decision-equity-hdr,
+    .decision-equity {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+    }
+
+    .decision-entry-header {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .decision-correct {
@@ -720,6 +732,48 @@
     .small-muted {
       font-size: 11px;
       color: var(--muted);
+    }
+
+    .hand-result-banner {
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hand-result-banner.win {
+      background: rgba(53, 214, 151, 0.15);
+      border-color: rgba(53, 214, 151, 0.5);
+      color: var(--success);
+    }
+
+    .hand-result-banner.loss {
+      background: rgba(255, 79, 106, 0.12);
+      border-color: rgba(255, 79, 106, 0.45);
+      color: var(--danger);
+    }
+
+    .hand-result-banner.fold {
+      background: rgba(154, 164, 198, 0.1);
+      border-color: rgba(154, 164, 198, 0.3);
+      color: var(--muted);
+    }
+
+    .hand-result-banner.tie {
+      background: rgba(79, 140, 255, 0.12);
+      border-color: rgba(79, 140, 255, 0.4);
+      color: var(--accent);
+    }
+
+    .community-placeholder {
+      width: 40px;
+      height: 56px;
+      border-radius: 10px;
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      background: rgba(10, 15, 35, 0.6);
     }
   </style>
 </head>
@@ -802,6 +856,7 @@
       </div>
 
       <div class="tutor-body">
+        <div class="hand-result-banner" id="handResultBanner" style="display: none;"></div>
         <div class="tutor-stage-tag" id="tutorStageTag">No hand yet</div>
         <div class="tutor-text" id="tutorText">
           <p>Click <strong>Deal new hand</strong> to start. The coach will suggest the best move using your win probability and pot odds at each street.</p>
@@ -992,6 +1047,32 @@
       return label;
     }
 
+    function getPlayerHandStrengthLabel() {
+      if (!state.heroHand || state.heroHand.length !== 2) return "—";
+      const all = state.heroHand.concat(state.community);
+      if (all.length < 5) {
+        if (state.community.length === 0) {
+          const r0 = state.heroHand[0].rank, r1 = state.heroHand[1].rank;
+          const pair = r0 === r1;
+          return pair ? "Pocket pair (" + rankDisplay(r0) + "s)" : rankDisplay(r0) + rankDisplay(r1) + " (hole cards)";
+        }
+        return "—";
+      }
+      let bestScore = null;
+      if (all.length === 5) {
+        bestScore = evaluate5(all);
+      } else if (all.length === 6) {
+        for (let i = 0; i < 6; i++) {
+          const five = all.filter((_, j) => j !== i);
+          const s = evaluate5(five);
+          if (!bestScore || compareScore(s, bestScore) > 0) bestScore = s;
+        }
+      } else {
+        bestScore = evaluateHand7(all).score;
+      }
+      return describeScore(bestScore);
+    }
+
     function getCurrentEquity() {
       if (state.heroHand.length < 2) return 0;
       const { winProb } = simulateEquity(state.heroHand, state.community, 2, 450);
@@ -999,7 +1080,7 @@
     }
 
     function simulateEquity(heroCards, communityCards, numOpponents = 2, iterations = 600) {
-      if (heroCards.length !== 2) return { winProb: 0, label: "—" };
+      if (heroCards.length !== 2) return { winProb: 0 };
       const used = new Set(heroCards.concat(communityCards).map(cardToString));
       let wins = 0;
       let ties = 0;
@@ -1040,8 +1121,7 @@
       }
 
       const equity = (wins + ties * 0.5) / Math.max(total, 1);
-      const label = describeScore(evaluateHand7(heroCards.concat(communityCards, drawCards(createDeck().filter(c => !used.has(cardToString(c))), Math.max(0, 5 - communityCards.length)))).score);
-      return { winProb: equity, label };
+      return { winProb: equity };
     }
 
     // --- Rules-based coach ---
@@ -1177,6 +1257,7 @@
     const decisionLogEl = el("decisionLog");
     const tutorTextEl = el("tutorText");
     const tutorStageTagEl = el("tutorStageTag");
+    const handResultBannerEl = el("handResultBanner");
 
     // --- Rendering ---
     function renderCard(card, faceDown = false) {
@@ -1232,7 +1313,7 @@
       const placeholders = 5 - state.community.length;
       for (let i = 0; i < placeholders; i++) {
         const placeholder = document.createElement("div");
-        placeholder.className = "card face-down";
+        placeholder.className = "community-placeholder";
         communityEl.appendChild(placeholder);
       }
 
@@ -1258,17 +1339,17 @@
         handStrengthLabelEl.textContent = "—";
         return;
       }
-      const { winProb, label } = simulateEquity(state.heroHand, state.community, 2, 450);
+      const { winProb } = simulateEquity(state.heroHand, state.community, 2, 450);
       const pct = Math.round(winProb * 1000) / 10;
       winProbEl.textContent = `${isNaN(pct) ? "--" : pct.toFixed(1)}%`;
-      handStrengthLabelEl.textContent = label;
+      handStrengthLabelEl.textContent = getPlayerHandStrengthLabel();
       winProbEl.classList.add("odds-updated");
       setTimeout(() => winProbEl.classList.remove("odds-updated"), 300);
     }
 
     function renderDecisions() {
       decisionLogEl.innerHTML = `
-        <div class="decision-log-title">Decision review (current session)</div>
+        <div class="decision-log-title">Decision review (this hand)</div>
       `;
 
       if (state.decisions.length === 0) {
@@ -1279,6 +1360,11 @@
         return;
       }
 
+      const header = document.createElement("div");
+      header.className = "decision-entry decision-entry-header";
+      header.innerHTML = "<span class=\"decision-stage\">Street</span><span class=\"decision-action\">Action</span><span class=\"decision-equity-hdr\">Equity</span><span>Verdict</span>";
+      decisionLogEl.appendChild(header);
+
       state.decisions.forEach(dec => {
         const row = document.createElement("div");
         row.className = "decision-entry";
@@ -1288,6 +1374,9 @@
         const action = document.createElement("div");
         action.className = "decision-action";
         action.textContent = dec.actionLabel;
+        const equityCell = document.createElement("div");
+        equityCell.className = "decision-equity";
+        equityCell.textContent = dec.equity != null ? (Math.round(dec.equity * 1000) / 10).toFixed(1) + "%" : "—";
         const correctness = document.createElement("div");
         correctness.className = "decision-correct " + (dec.correct === true ? "good" : dec.correct === false ? "bad" : "");
         const pill = document.createElement("span");
@@ -1302,6 +1391,7 @@
 
         row.appendChild(stage);
         row.appendChild(action);
+        row.appendChild(equityCell);
         row.appendChild(correctness);
         decisionLogEl.appendChild(row);
       });
@@ -1344,6 +1434,7 @@
       state.lastBet = 0;
       state.decisions = [];
       resetActions();
+      handResultBannerEl.style.display = "none";
       renderHands();
       renderWinProb();
       updateCoachPanel();
@@ -1401,10 +1492,10 @@
       state.decisions.forEach(evaluateDecision);
       renderHands();
       const description = describeScore(heroScore);
-      tutorTextEl.innerHTML = `
-        <p>Showdown: you hold <strong>${description}</strong>. Result: <strong>${result}</strong>.</p>
-        <p>Review the decision log below – each choice is rated Good or Poor based on your equity at that moment.</p>
-      `;
+      handResultBannerEl.style.display = "block";
+      handResultBannerEl.className = "hand-result-banner " + (result === "win" ? "win" : result === "loss" ? "loss" : "tie");
+      handResultBannerEl.textContent = result === "win" ? "You won! — " + description : result === "loss" ? "You lost — " + description : result === "three-way tie" ? "Three-way tie — " + description : "Chop pot — " + description;
+      tutorTextEl.innerHTML = "<p>Review the decision log below – each choice is rated Good or Poor based on your equity at that moment.</p>";
       renderDecisions();
       setButtonsForStage();
     }
@@ -1484,10 +1575,16 @@
       op1ActionEl.textContent = "Wins pot";
       op2ActionEl.textContent = "";
       recordDecision("fold", 0);
+      while (state.community.length < 5 && state.deck.length > 0) {
+        state.community.push(state.deck.shift());
+      }
       state.stage = "showdown";
       state.decisions.forEach(evaluateDecision);
       tutorStageTagEl.textContent = "Hand folded";
-      tutorTextEl.innerHTML = "<p>You folded. Review your decisions below – each is rated Good or Poor based on your equity at that moment.</p>";
+      handResultBannerEl.style.display = "block";
+      handResultBannerEl.className = "hand-result-banner fold";
+      handResultBannerEl.textContent = "You folded";
+      tutorTextEl.innerHTML = "<p>Review your decisions below – each is rated Good or Poor based on your equity at that moment.</p>";
       setButtonsForStage();
       renderHands();
       renderDecisions();
