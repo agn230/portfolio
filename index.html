@@ -255,6 +255,64 @@
       white-space: nowrap;
     }
 
+    .player.winner .player-label {
+      border-color: rgba(53, 214, 151, 0.85);
+      box-shadow:
+        0 0 0 1px rgba(53, 214, 151, 0.25),
+        0 0 22px rgba(53, 214, 151, 0.5);
+    }
+
+    .player.winner {
+      filter: drop-shadow(0 0 14px rgba(53, 214, 151, 0.35));
+    }
+
+    .player.loser .player-label {
+      border-color: rgba(255, 79, 106, 0.65);
+    }
+
+    .player-showdown-line {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(14, 19, 44, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(235, 240, 255, 0.88);
+      font-size: 11px;
+      line-height: 1;
+      white-space: nowrap;
+      margin-top: -2px;
+    }
+
+    .player-wl {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 22px;
+      border-radius: 999px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      line-height: 1;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(14, 19, 44, 0.92);
+      margin-top: -4px;
+    }
+
+    .player-wl.win {
+      color: var(--success);
+      border-color: rgba(53, 214, 151, 0.5);
+      box-shadow: 0 0 14px rgba(53, 214, 151, 0.35);
+    }
+
+    .player-wl.loss {
+      color: var(--danger);
+      border-color: rgba(255, 79, 106, 0.5);
+      box-shadow: 0 0 14px rgba(255, 79, 106, 0.22);
+    }
+
     .cards-row {
       display: flex;
       gap: 6px;
@@ -506,12 +564,114 @@
       border: 1px solid rgba(83, 245, 178, 0.35);
       font-size: 12px;
       color: var(--muted);
+      position: relative;
     }
 
     .pot-odds-display .pot-odds-value {
       color: var(--success);
       font-weight: 600;
       font-variant-numeric: tabular-nums;
+    }
+
+    .pot-odds-tooltip {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 10px);
+      width: 260px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(9, 12, 24, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 42px rgba(0,0,0,0.55);
+      color: rgba(235, 240, 255, 0.92);
+      font-size: 11px;
+      line-height: 1.35;
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      z-index: 20;
+    }
+
+    .pot-odds-display:hover .pot-odds-tooltip {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .equity-chart-block {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .equity-chart-title {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .equity-chart {
+      width: 100%;
+      height: 86px;
+      display: block;
+    }
+
+    .mini-cards {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      vertical-align: middle;
+    }
+
+    .mini-card {
+      width: 26px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: radial-gradient(circle at 20% 0, rgba(255,255,255,0.18), transparent 65%), #071022;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 3px 3px 2px;
+      box-shadow:
+        0 10px 18px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(0, 0, 0, 0.75);
+      color: #f4f6ff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mini-card.red {
+      color: #ff7a9a;
+    }
+
+    .mini-card .mini-rank {
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      align-self: flex-start;
+    }
+
+    .mini-card .mini-suit {
+      font-size: 10px;
+      line-height: 1;
+      align-self: flex-end;
+      opacity: 0.95;
+    }
+
+    .mini-card .mini-center {
+      font-size: 12px;
+      line-height: 1;
+      opacity: 0.9;
+    }
+
+    .hand-strength .value .hole-cards-note {
+      margin-left: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
     }
 
     .odds-chip {
@@ -866,34 +1026,40 @@
 
           <div class="community-area">
             <div class="community-cards" id="communityCards"></div>
-            <div class="pot-indicator" id="potInfo">Pot: 0 • Stakes: 1 / 2</div>
+            <div class="pot-indicator" id="potInfo">Pot: $0 • Blinds $1/$2</div>
             <div class="stage-pill" id="stageLabel">Click Deal to start a hand</div>
           </div>
 
-          <div class="player me">
+          <div class="player me" id="heroPlayer">
             <div class="player-label me">
               <span class="player-name"><span class="chip-indicator"></span> You</span>
               <span class="player-stack" id="heroStack">$100</span>
             </div>
             <div class="cards-row" id="heroCards"></div>
+            <div class="player-showdown-line" id="heroFinalHand" style="display:none;"></div>
+            <div class="player-wl" id="heroWL" style="display:none;"></div>
             <div class="player-action-pill" id="heroAction"></div>
           </div>
 
-          <div class="player opponent-1">
+          <div class="player opponent-1" id="op1Player">
             <div class="player-label">
               <span class="player-name">Opponent 1</span>
               <span class="player-stack" id="op1Stack">$100</span>
             </div>
             <div class="cards-row" id="op1Cards"></div>
+            <div class="player-showdown-line" id="op1FinalHand" style="display:none;"></div>
+            <div class="player-wl" id="op1WL" style="display:none;"></div>
             <div class="player-action-pill" id="op1Action"></div>
           </div>
 
-          <div class="player opponent-2">
+          <div class="player opponent-2" id="op2Player">
             <div class="player-label">
               <span class="player-name">Opponent 2</span>
               <span class="player-stack" id="op2Stack">$100</span>
             </div>
             <div class="cards-row" id="op2Cards"></div>
+            <div class="player-showdown-line" id="op2FinalHand" style="display:none;"></div>
+            <div class="player-wl" id="op2WL" style="display:none;"></div>
             <div class="player-action-pill" id="op2Action"></div>
           </div>
         </div>
@@ -921,6 +1087,7 @@
           </div>
           <div class="pot-odds-display" id="potOddsDisplay" style="display: none;">
             Pot odds: <span class="pot-odds-value" id="potOddsValue">—</span>
+            <div class="pot-odds-tooltip" id="potOddsTooltip" role="tooltip"></div>
           </div>
         </div>
       </div>
@@ -946,6 +1113,10 @@
             Current hand:
             <span class="value" id="handStrengthLabel">—</span>
           </div>
+          <div class="equity-chart-block" id="equityChartBlock" style="display:none;">
+            <div class="equity-chart-title">Equity by street</div>
+            <svg class="equity-chart" id="equityChart" viewBox="0 0 240 88" preserveAspectRatio="none" aria-label="Equity by street chart"></svg>
+          </div>
         </div>
       </div>
 
@@ -961,15 +1132,15 @@
     const RANKS = ["2","3","4","5","6","7","8","9","T","J","Q","K","A"];
     const SUITS = ["♣","♦","♥","♠"];
     const HAND_CATEGORIES = [
-      "High card",
+      "High Card",
       "Pair",
-      "Two pair",
-      "Three of a kind",
+      "Two Pair",
+      "Three of a Kind",
       "Straight",
       "Flush",
-      "Full house",
-      "Four of a kind",
-      "Straight flush"
+      "Full House",
+      "Four of a Kind",
+      "Straight Flush"
     ];
 
     function createDeck() {
@@ -1217,39 +1388,46 @@
       const pot = state.pot;
       const stage = state.stage;
       const betSizeInput = state.betSize ?? 6;
-      const potOdds = pot > 0 ? betSizeInput / (pot + betSizeInput) : 0;
+      const potOddsInfo = getPotOddsInfo();
+      const potOdds = potOddsInfo ? potOddsInfo.requiredEquity : (pot > 0 ? betSizeInput / (pot + betSizeInput) : 0);
+      let potOddsLine = "";
+      if (potOddsInfo) {
+        const eqPct = Math.round(equity * 1000) / 10;
+        const needPct = Math.round(potOddsInfo.requiredEquity * 1000) / 10;
+        potOddsLine = eqPct >= needPct ? "Pot odds favor calling." : "Pot odds suggest folding.";
+      }
 
       if (equity >= 0.5) {
         return {
           bestAction: "bet",
-          summary: "Strong hand – you have the edge.",
+          summary: ("Strong hand – you have the edge." + (potOddsLine ? " " + potOddsLine : "")),
           explanation: `Your win probability is ${pct.toFixed(1)}%. With this much equity, betting builds the pot and gets value. Checking is acceptable but leaves money on the table. Folding would be a mistake.`
         };
       }
       if (equity >= 0.38) {
         return {
           bestAction: "bet",
-          summary: "Good hand – lean toward betting.",
+          summary: ("Good hand – lean toward betting." + (potOddsLine ? " " + potOddsLine : "")),
           explanation: `You have ${pct.toFixed(1)}% equity. Betting is positive expected value here; checking is reasonable if you want to pot-control. Don't fold.`
         };
       }
       if (equity >= 0.28) {
         return {
           bestAction: "check",
-          summary: "Marginal hand – check to see the next card cheaply.",
+          summary: ("Marginal hand – check to see the next card cheaply." + (potOddsLine ? " " + potOddsLine : "")),
           explanation: `Your equity is ${pct.toFixed(1)}%. Checking keeps the pot small and lets you reassess on the next street. Betting can be okay in position, but folding is too tight.`
         };
       }
       if (equity >= 0.18) {
         return {
           bestAction: "check",
-          summary: "Weak hand – check or fold depending on pot odds.",
-          explanation: `Only ${pct.toFixed(1)}% equity. If the pot is small, checking to see the next card is fine. If you would need to call a big bet, folding is correct.`
+          summary: ("Weak hand – check or fold depending on pot odds." + (potOddsLine ? " " + potOddsLine : "")),
+          explanation: `Only ${pct.toFixed(1)}% equity. If you would need to call a bet, compare your equity to the pot odds threshold.`
         };
       }
       return {
         bestAction: "fold",
-        summary: "Very weak – folding is correct.",
+        summary: ("Very weak – folding is correct." + (potOddsLine ? " " + potOddsLine : "")),
         explanation: `Your win probability is ${pct.toFixed(1)}%. With this little equity, continuing is negative expected value. Save your chips for better spots.`
       };
     }
@@ -1322,6 +1500,7 @@
       lastBet: 0,
       decisions: [],
       currentEquity: null,
+      equityStreet: { preflop: null, flop: null, turn: null, river: null },
       betSize: 6,
       sessionStartStack: 100
     };
@@ -1344,15 +1523,196 @@
     const tutorTextEl = el("tutorText");
     const tutorStageTagEl = el("tutorStageTag");
     const handResultBannerEl = el("handResultBanner");
+    const potOddsTooltipEl = el("potOddsTooltip");
+    const equityChartBlockEl = el("equityChartBlock");
+    const equityChartEl = el("equityChart");
+
+    const heroPlayerEl = el("heroPlayer");
+    const op1PlayerEl = el("op1Player");
+    const op2PlayerEl = el("op2Player");
+    const heroFinalHandEl = el("heroFinalHand");
+    const op1FinalHandEl = el("op1FinalHand");
+    const op2FinalHandEl = el("op2FinalHand");
+    const heroWLEl = el("heroWL");
+    const op1WLEl = el("op1WL");
+    const op2WLEl = el("op2WL");
 
     // --- Rendering ---
+    const STREET_ORDER = ["preflop", "flop", "turn", "river"];
+    const STREET_LABELS = ["Preflop", "Flop", "Turn", "River"];
+
+    function isRedSuit(suit) {
+      return suit === "♥" || suit === "♦";
+    }
+
+    function holeCardsMiniHTML(cards) {
+      if (!cards || cards.length !== 2) return "—";
+      return `
+        <span class="mini-cards" aria-label="Hole cards">
+          ${cards.map(card => `
+            <span class="mini-card ${isRedSuit(card.suit) ? "red" : ""}" aria-label="${rankDisplay(card.rank)}${card.suit}">
+              <span class="mini-rank">${rankDisplay(card.rank)}</span>
+              <span class="mini-center">${card.suit}</span>
+              <span class="mini-suit">${card.suit}</span>
+            </span>
+          `).join("")}
+        </span>
+      `;
+    }
+
+    function renderCoachHandStrength() {
+      if (!handStrengthLabelEl) return;
+      if (!state.heroHand || state.heroHand.length !== 2) {
+        handStrengthLabelEl.textContent = "—";
+        return;
+      }
+      if (state.community.length === 0) {
+        const pair = state.heroHand[0].rank === state.heroHand[1].rank;
+        handStrengthLabelEl.innerHTML = holeCardsMiniHTML(state.heroHand) +
+          `<span class="hole-cards-note">(${pair ? "pocket pair" : "hole cards"})</span>`;
+        return;
+      }
+      handStrengthLabelEl.textContent = getPlayerHandStrengthLabel();
+    }
+
+    function recordEquityForStreet() {
+      if (!state || typeof state.currentEquity !== "number") return;
+      if (!STREET_ORDER.includes(state.stage)) return;
+      if (state.equityStreet) state.equityStreet[state.stage] = state.currentEquity;
+    }
+
+    function renderEquityChart() {
+      if (!equityChartEl || !equityChartBlockEl) return;
+      const shouldShow = state.heroHand && state.heroHand.length === 2 && state.stage !== "idle";
+      equityChartBlockEl.style.display = shouldShow ? "" : "none";
+      if (!shouldShow) {
+        equityChartEl.innerHTML = "";
+        return;
+      }
+
+      const W = 240, H = 88;
+      const padL = 28, padR = 10, padT = 8, padB = 20;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+      const xStep = plotW / 3;
+
+      const points = STREET_ORDER.map((street, i) => {
+        const eq = state.equityStreet?.[street];
+        if (eq == null || Number.isNaN(eq)) return null;
+        const x = padL + i * xStep;
+        const y = padT + (1 - Math.max(0, Math.min(1, eq))) * plotH;
+        return { x, y };
+      });
+
+      const known = points.filter(Boolean);
+      const linePts = [];
+      for (let i = 0; i < points.length; i++) {
+        if (!points[i]) break;
+        linePts.push(points[i]);
+      }
+
+      const grid = [0, 0.5, 1].map(v => {
+        const y = padT + (1 - v) * plotH;
+        return `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-width="1" />`;
+      }).join("");
+
+      const yLabels = [
+        { v: 1, label: "100" },
+        { v: 0.5, label: "50" },
+        { v: 0, label: "0" }
+      ].map(t => {
+        const y = padT + (1 - t.v) * plotH + 4;
+        return `<text x="${padL - 6}" y="${y}" text-anchor="end" font-size="10" fill="rgba(154,164,198,0.85)">${t.label}</text>`;
+      }).join("");
+
+      const xLabels = STREET_LABELS.map((label, i) => {
+        const x = padL + i * xStep;
+        return `<text x="${x}" y="${H - 6}" text-anchor="middle" font-size="10" fill="rgba(154,164,198,0.85)">${label}</text>`;
+      }).join("");
+
+      const line = linePts.length >= 2
+        ? `<polyline fill="none" stroke="rgba(83,245,178,0.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="${linePts.map(p => `${p.x},${p.y}`).join(" ")}" />`
+        : "";
+
+      const dots = known.map(p => `
+        <circle cx="${p.x}" cy="${p.y}" r="3.4" fill="rgba(83,245,178,0.95)" />
+        <circle cx="${p.x}" cy="${p.y}" r="6.2" fill="rgba(83,245,178,0.12)" />
+      `).join("");
+
+      equityChartEl.innerHTML = `
+        <rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" rx="10" ry="10" fill="rgba(10, 15, 35, 0.45)" stroke="rgba(255,255,255,0.08)" />
+        ${grid}
+        ${yLabels}
+        ${xLabels}
+        ${line}
+        ${dots}
+      `;
+    }
+
+    function clearShowdownUI() {
+      const players = [heroPlayerEl, op1PlayerEl, op2PlayerEl].filter(Boolean);
+      players.forEach(p => {
+        p.classList.remove("winner", "loser");
+      });
+      [heroFinalHandEl, op1FinalHandEl, op2FinalHandEl].forEach(elm => {
+        if (!elm) return;
+        elm.textContent = "";
+        elm.style.display = "none";
+      });
+      [heroWLEl, op1WLEl, op2WLEl].forEach(elm => {
+        if (!elm) return;
+        elm.textContent = "";
+        elm.className = "player-wl";
+        elm.style.display = "none";
+      });
+    }
+
+    function setShowdownUI({ heroScore, op1Score, op2Score, forcedWinners = null } = {}) {
+      if (!heroScore || !op1Score || !op2Score) return;
+      const scores = {
+        hero: heroScore,
+        op1: op1Score,
+        op2: op2Score
+      };
+
+      let winners;
+      if (Array.isArray(forcedWinners) && forcedWinners.length) {
+        winners = forcedWinners;
+      } else {
+        let best = scores.hero;
+        for (const key of ["op1", "op2"]) {
+          if (compareScore(scores[key], best) > 0) best = scores[key];
+        }
+        winners = ["hero", "op1", "op2"].filter(key => compareScore(scores[key], best) === 0);
+      }
+
+      const cfg = [
+        { key: "hero", playerEl: heroPlayerEl, finalEl: heroFinalHandEl, wlEl: heroWLEl },
+        { key: "op1", playerEl: op1PlayerEl, finalEl: op1FinalHandEl, wlEl: op1WLEl },
+        { key: "op2", playerEl: op2PlayerEl, finalEl: op2FinalHandEl, wlEl: op2WLEl }
+      ];
+
+      cfg.forEach(p => {
+        if (!p.playerEl || !p.finalEl || !p.wlEl) return;
+        const handName = describeScore(scores[p.key]);
+        p.finalEl.textContent = handName;
+        p.finalEl.style.display = "";
+        const isWinner = winners.includes(p.key);
+        p.playerEl.classList.toggle("winner", isWinner);
+        p.playerEl.classList.toggle("loser", !isWinner);
+        p.wlEl.textContent = isWinner ? "W" : "L";
+        p.wlEl.className = "player-wl " + (isWinner ? "win" : "loss");
+        p.wlEl.style.display = "";
+      });
+    }
+
     function renderCard(card, faceDown = false) {
       const div = document.createElement("div");
       div.className = "card" + (faceDown ? " face-down" : "");
       if (faceDown || !card) {
         return div;
       }
-      const isRed = card.suit === "♥" || card.suit === "♦";
+      const isRed = isRedSuit(card.suit);
       if (isRed) div.classList.add("red");
 
       const rankDiv = document.createElement("div");
@@ -1406,7 +1766,7 @@
       el("heroStack").textContent = "$" + state.heroStack;
       el("op1Stack").textContent = "$" + state.op1Stack;
       el("op2Stack").textContent = "$" + state.op2Stack;
-      potInfoEl.textContent = `Pot: $${state.pot} • Stakes: 1 / 2`;
+      potInfoEl.textContent = `Pot: $${state.pot} • Blinds $1/$2`;
       updateBetStepperDisplay();
       updateSessionDisplay();
 
@@ -1425,13 +1785,16 @@
       if (state.heroHand.length < 2) {
         state.currentEquity = null;
         winProbEl.textContent = "--%";
-        handStrengthLabelEl.textContent = "—";
+        renderCoachHandStrength();
+        renderEquityChart();
         return;
       }
       getCurrentEquity();
       const pct = Math.round(state.currentEquity * 1000) / 10;
       winProbEl.textContent = `${isNaN(pct) ? "--" : pct.toFixed(1)}%`;
-      handStrengthLabelEl.textContent = getPlayerHandStrengthLabel();
+      renderCoachHandStrength();
+      recordEquityForStreet();
+      renderEquityChart();
       winProbEl.classList.add("odds-updated");
       setTimeout(() => winProbEl.classList.remove("odds-updated"), 300);
     }
@@ -1525,20 +1888,39 @@
       if (downBtn) downBtn.disabled = (state.betSize ?? 6) <= Math.min(6, state.heroStack);
     }
 
+    function getPotOddsInfo() {
+      const isPlayerTurn = state.stage !== "idle" && state.stage !== "showdown";
+      if (!isPlayerTurn) return null;
+      const toCall = state.betSize ?? 6;
+      const pot = state.pot;
+      const total = pot + toCall;
+      const requiredEquity = total > 0 ? (toCall / total) : 0;
+      return { pot, toCall, total, requiredEquity };
+    }
+
     function updatePotOddsDisplay() {
       const container = el("potOddsDisplay");
       const valueEl = el("potOddsValue");
       if (!container || !valueEl) return;
-      const isPlayerTurn = state.stage !== "idle" && state.stage !== "showdown";
-      if (!isPlayerTurn) {
+      const info = getPotOddsInfo();
+      if (!info) {
         container.style.display = "none";
         return;
       }
       container.style.display = "";
-      const toCall = state.betSize ?? 6;
-      const total = state.pot + toCall;
-      const pct = total > 0 ? Math.round((toCall / total) * 1000) / 10 : 0;
+      const pct = info.total > 0 ? Math.round((info.requiredEquity) * 1000) / 10 : 0;
       valueEl.textContent = "need ~" + pct.toFixed(1) + "% equity to call";
+      if (potOddsTooltipEl) {
+        const needPct = (info.requiredEquity * 100);
+        potOddsTooltipEl.innerHTML = `
+          <div style="color: rgba(235,240,255,0.92); font-weight: 650; margin-bottom: 6px;">How this is calculated</div>
+          <div>Pot is <strong>$${info.pot}</strong>, you must call <strong>$${info.toCall}</strong>.</div>
+          <div style="margin-top: 6px;">You need:</div>
+          <div style="margin-top: 2px; font-variant-numeric: tabular-nums;">
+            <strong>${info.toCall}</strong> / (<strong>${info.pot}</strong> + <strong>${info.toCall}</strong>) = <strong>${needPct.toFixed(1)}%</strong> equity
+          </div>
+        `;
+      }
     }
 
     function updateSessionDisplay() {
@@ -1576,9 +1958,11 @@
       state.lastBet = 0;
       state.decisions = [];
       state.currentEquity = null;
+      state.equityStreet = { preflop: null, flop: null, turn: null, river: null };
       clampBetSize();
       resetActions();
       handResultBannerEl.style.display = "none";
+      clearShowdownUI();
       renderHands();
       renderWinProb();
       updateCoachPanel();
@@ -1644,6 +2028,7 @@
         state.heroStack += Math.floor(state.pot / (result === "three-way tie" ? 3 : 2));
       }
       renderHands();
+      setShowdownUI({ heroScore, op1Score, op2Score });
       updateSessionDisplay();
       updateBetStepperDisplay();
       const description = describeScore(heroScore);
@@ -1747,6 +2132,9 @@
       }
       state.stage = "showdown";
       state.decisions.forEach(evaluateDecision);
+      const heroScore = evaluateHand7(state.heroHand.concat(state.community)).score;
+      const op1Score = evaluateHand7(state.op1Hand.concat(state.community)).score;
+      const op2Score = evaluateHand7(state.op2Hand.concat(state.community)).score;
       tutorStageTagEl.textContent = "Hand folded";
       handResultBannerEl.style.display = "block";
       handResultBannerEl.className = "hand-result-banner fold";
@@ -1754,6 +2142,7 @@
       tutorTextEl.innerHTML = "<p>Review your decisions below – each is rated Good or Poor based on your equity at that moment.</p>";
       setButtonsForStage();
       renderHands();
+      setShowdownUI({ heroScore, op1Score, op2Score, forcedWinners: ["op1"] });
       renderDecisions();
     });
 
