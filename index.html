@@ -2,2353 +2,361 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Poker Tutor</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nandify.ai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet" />
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #050810;
-      --bg-alt: #0b1020;
-      --card-bg: #182133;
-      --accent: #4f8cff;
-      --accent-soft: rgba(79, 140, 255, 0.18);
-      --danger: #ff4f6a;
-      --success: #35d697;
-      --text: #f4f6ff;
-      --muted: #9aa4c6;
-      --border-subtle: rgba(255, 255, 255, 0.06);
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --radius-pill: 999px;
-      --shadow-soft: 0 18px 60px rgba(5, 12, 40, 0.9);
+      --bg: #04080f;
+      --grid: rgba(0, 198, 255, 0.04);
+      --cyan: #00c6ff;
+      --cyan-dim: rgba(0, 198, 255, 0.35);
+      --cyan-glow: rgba(0, 198, 255, 0.08);
+      --text: #c8e6f0;
+      --muted: rgba(200, 230, 240, 0.4);
+      --border: rgba(0, 198, 255, 0.15);
+      --border-hover: rgba(0, 198, 255, 0.5);
+      --card: rgba(0, 198, 255, 0.03);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
+    html, body {
       min-height: 100vh;
-      width: 100%;
-      margin: 0;
-      font-size: 18px;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-        "Inter", sans-serif;
+      background: var(--bg);
       color: var(--text);
-      background:
-        radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.08) 0, transparent 46%),
-        radial-gradient(circle at 78% 80%, rgba(0, 0, 0, 0.35) 0, transparent 58%),
-        radial-gradient(circle at 50% 40%, rgba(14, 84, 52, 0.92) 0, rgba(3, 26, 16, 0.98) 72%),
-        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 3px),
-        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.02) 0 1px, transparent 1px 4px);
-      display: flex;
-      align-items: stretch;
-      justify-content: stretch;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .app-shell {
-      width: 100%;
-      min-width: 0;
-      background: rgba(5, 8, 18, 0.95);
-      display: grid;
-      grid-template-columns: minmax(0, 3fr) minmax(320px, 2.3fr);
-      gap: 0;
-      overflow: hidden;
-      backdrop-filter: blur(22px);
-    }
-
-    @media (max-width: 880px) {
-      .app-shell {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .table-panel {
-      padding: 20px 22px 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      border-right: 1px solid var(--border-subtle);
-    }
-
-    @media (max-width: 880px) {
-      .table-panel {
-        border-right: none;
-        border-bottom: 1px solid var(--border-subtle);
-      }
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-    }
-
-    .session-chip-count {
-      font-size: 13px;
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
-      padding: 6px 12px;
-      border-radius: var(--radius-pill);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(10, 15, 34, 0.96);
-    }
-
-    .session-chip-count.up {
-      color: var(--success);
-      border-color: rgba(53, 214, 151, 0.4);
-    }
-
-    .session-chip-count.down {
-      color: var(--danger);
-      border-color: rgba(255, 79, 106, 0.4);
-    }
-
-    .title-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .title {
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .title-pill {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--muted);
-    }
-
-    .table-wrapper {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 0 0 8px;
-      margin-top: -8px;
-    }
-
-    .table {
-      width: 100%;
-      max-width: 1400px;
-      aspect-ratio: 16 / 9;
-      border-radius: 999px;
-      background:
-        radial-gradient(ellipse 80% 70% at 50% 50%, rgba(255, 255, 255, 0.12) 0%, transparent 55%),
-        radial-gradient(circle at 50% 50%, rgba(28, 80, 52, 0.95) 0%, rgba(12, 48, 30, 0.98) 45%, rgba(6, 32, 18, 0.99) 72%);
-      border: 3px solid rgba(212, 175, 55, 0.55);
-      box-shadow:
-        inset 0 0 0 1px rgba(0, 0, 0, 0.25),
-        inset 0 0 80px rgba(0, 0, 0, 0.15),
-        0 20px 50px rgba(0, 0, 0, 0.6);
-      position: relative;
-      padding: 24px 40px;
-    }
-
-    .table::before {
-      content: "";
-      position: absolute;
+    body::before {
+      content: '';
+      position: fixed;
       inset: 0;
-      border-radius: inherit;
-      pointer-events: none;
       background-image:
-        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px),
-        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0 1px, transparent 1px 4px),
-        radial-gradient(ellipse 70% 60% at 50% 45%, rgba(255, 255, 255, 0.06) 0%, transparent 50%);
-      opacity: 0.6;
-      mix-blend-mode: overlay;
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .table > * {
+    body::after {
+      content: '';
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(0,198,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
       position: relative;
       z-index: 1;
-    }
-
-    .dealer-chip {
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 20%, #ffffff 0, #d3def5 50%, #7f8db0 85%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 600;
-      color: #111525;
-      box-shadow:
-        0 10px 24px rgba(0, 0, 0, 0.45),
-        0 0 0 4px rgba(5, 10, 26, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-    }
-
-    .dealer-chip::after {
-      content: "";
-      position: absolute;
-      inset: 5px;
-      border-radius: inherit;
-      border: 1px dashed rgba(18, 24, 44, 0.8);
-    }
-
-    .player {
-      position: absolute;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      transform: translate(-50%, -50%);
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 2rem;
     }
 
-    .player.me {
-      bottom: 2%;
-      left: 50%;
-      transform: translate(-50%, -4%);
-    }
-
-    .player.opponent-1 {
-      top: 28%;
-      left: 8%;
-    }
-
-    .player.opponent-2 {
-      top: 28%;
-      right: 8%;
-      transform: translate(50%, -50%);
-    }
-
-    .player-label {
-      padding: 6px 14px;
-      border-radius: var(--radius-md);
-      background: rgba(14, 19, 44, 0.94);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 12px;
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      white-space: nowrap;
-    }
-
-    .player-label.me {
-      background: rgba(24, 63, 107, 0.96);
-      border-color: rgba(133, 189, 255, 0.7);
-    }
-
-    .player-label .player-name {
-      font-weight: 500;
-    }
-
-    .chip-indicator {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 20%, #ffffff 0, #35d697 60%);
-      box-shadow: 0 0 8px rgba(53, 214, 151, 0.9);
-    }
-
-    .player-stack {
-      font-size: 12px;
-      color: var(--muted);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .player-action-pill {
-      font-size: 11px;
-      color: var(--accent);
-      padding: 4px 12px;
-      background: rgba(3, 18, 42, 0.9);
-      border: 1px solid rgba(79, 140, 255, 0.4);
-      border-radius: var(--radius-pill);
-      min-height: 22px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      white-space: nowrap;
-    }
-
-    .player.winner .player-label {
-      border-color: rgba(53, 214, 151, 0.85);
-      box-shadow:
-        0 0 0 1px rgba(53, 214, 151, 0.25),
-        0 0 22px rgba(53, 214, 151, 0.5);
-    }
-
-    .player.winner {
-      filter: drop-shadow(0 0 14px rgba(53, 214, 151, 0.35));
-    }
-
-    .player.loser .player-label {
-      border-color: rgba(255, 79, 106, 0.65);
-    }
-
-    .player-showdown-line {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px 10px;
-      border-radius: var(--radius-pill);
-      background: rgba(14, 19, 44, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: rgba(235, 240, 255, 0.88);
-      font-size: 11px;
-      line-height: 1;
-      white-space: nowrap;
-      margin-top: -2px;
-    }
-
-    .player-wl {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 22px;
-      border-radius: 999px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      font-size: 12px;
-      line-height: 1;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(14, 19, 44, 0.92);
-      margin-top: -4px;
-    }
-
-    .player-wl.win {
-      color: var(--success);
-      border-color: rgba(53, 214, 151, 0.5);
-      box-shadow: 0 0 14px rgba(53, 214, 151, 0.35);
-    }
-
-    .player-wl.loss {
-      color: var(--danger);
-      border-color: rgba(255, 79, 106, 0.5);
-      box-shadow: 0 0 14px rgba(255, 79, 106, 0.22);
-    }
-
-    .cards-row {
-      display: flex;
-      gap: 6px;
-    }
-
-    .card {
-      width: 44px;
-      height: 60px;
-      border-radius: 8px;
-      border: 1px solid rgba(14, 18, 28, 0.2);
-      background: #ffffff;
-      box-shadow:
-        0 10px 18px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(0, 0, 0, 0.12);
-      display: grid;
-      grid-template-rows: 1fr auto 1fr;
-      align-items: center;
-      justify-items: center;
-      padding: 4px 5px;
-      overflow: hidden;
-      font-size: 11px;
-      line-height: 1;
-      color: #1a1a1a;
-    }
-
-    .card.face-down {
-      background: #0a1628;
-      box-shadow:
-        0 10px 20px rgba(0, 0, 0, 0.6),
-        0 0 0 1px rgba(0, 0, 0, 0.4);
-      border-color: rgba(180, 150, 80, 0.35);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card.face-down::before {
-      content: "";
-      position: absolute;
-      inset: 4px;
-      border-radius: 6px;
-      background-color: #0c1929;
-      background-image:
-        repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(212, 175, 55, 0.14) 6px, rgba(212, 175, 55, 0.14) 7px),
-        repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(212, 175, 55, 0.14) 6px, rgba(212, 175, 55, 0.14) 7px);
-      border: 1px solid rgba(212, 175, 55, 0.22);
-    }
-
-    .card-corner {
+    main {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      gap: 0;
-      line-height: 1;
+      padding: 5rem 0 3rem;
     }
 
-    .card-corner-tl {
-      align-self: start;
-      justify-self: start;
-    }
-
-    .card-corner-br {
-      align-self: end;
-      justify-self: end;
-      transform: rotate(180deg);
-    }
-
-    .card-rank {
-      font-weight: 800;
-      font-size: 12px;
-      letter-spacing: -0.02em;
-    }
-
-    .card-suit-small {
-      font-size: 10px;
-      opacity: 0.95;
-    }
-
-    .card-center-suit {
-      font-size: 22px;
-      line-height: 1;
-      opacity: 0.95;
-    }
-
-    .card.red .card-rank,
-    .card.red .card-suit-small,
-    .card.red .card-center-suit {
-      color: #c41e3a;
-    }
-
-    .card:not(.red) .card-rank,
-    .card:not(.red) .card-suit-small,
-    .card:not(.red) .card-center-suit {
-      color: #1a1a1a;
-    }
-
-    .community-area {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 18px;
-    }
-
-    .table-info-pills {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    .info-pill {
-      padding: 8px 18px;
-      border-radius: var(--radius-pill);
-      font-size: 13px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      letter-spacing: 0.02em;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
-    }
-
-    .info-pill.pot-pill {
-      background: linear-gradient(135deg, rgba(53, 214, 151, 0.25), rgba(53, 214, 151, 0.12));
-      border: 1px solid rgba(53, 214, 151, 0.5);
-      color: #7ee4b4;
-      box-shadow: 0 0 24px rgba(53, 214, 151, 0.25);
-    }
-
-    .info-pill.blinds-pill {
-      background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.08));
-      border: 1px solid rgba(212, 175, 55, 0.45);
-      color: #e8d48a;
-      box-shadow: 0 0 24px rgba(212, 175, 55, 0.2);
-    }
-
-    .info-pill.stage-pill {
-      background: linear-gradient(135deg, rgba(125, 231, 255, 0.18), rgba(125, 231, 255, 0.08));
-      border: 1px solid rgba(125, 231, 255, 0.45);
-      color: #a8edff;
-      box-shadow: 0 0 24px rgba(125, 231, 255, 0.2);
-    }
-
-    .info-pill-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      opacity: 0.85;
-    }
-
-    .community-cards {
-      display: flex;
-      gap: 8px;
-    }
-
-    .controls-row {
+    .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      margin-top: 4px;
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn {
-      position: relative;
-      border-radius: var(--radius-pill);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 500;
-      background: rgba(10, 15, 34, 0.96);
-      color: var(--text);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: transform 0.1s ease, box-shadow 0.12s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.12s ease;
-      white-space: nowrap;
-    }
-
-    .btn.primary {
-      background: linear-gradient(135deg, #407bff, #7c5cff);
-      border-color: rgba(131, 177, 255, 0.8);
-      box-shadow:
-        0 12px 25px rgba(37, 96, 255, 0.4),
-        0 0 0 1px rgba(0, 0, 0, 0.8);
-    }
-
-    .btn.danger {
-      background: linear-gradient(135deg, #ff4f6a, #ff8a5b);
-      border-color: rgba(255, 153, 178, 0.9);
-      box-shadow:
-        0 12px 26px rgba(255, 79, 106, 0.55),
-        0 0 0 1px rgba(0, 0, 0, 0.85);
-    }
-
-    .btn.secondary {
-      background: rgba(13, 22, 52, 0.96);
-    }
-
-    .btn:disabled {
-      opacity: 0.45;
-      cursor: default;
-      box-shadow: none;
-      transform: none;
-    }
-
-    .btn:not(:disabled):hover {
-      transform: translateY(-1px);
-      box-shadow:
-        0 14px 35px rgba(8, 18, 56, 0.75),
-        0 0 0 1px rgba(143, 182, 255, 0.45);
-      border-color: rgba(161, 189, 255, 0.7);
-      background: linear-gradient(135deg, #4a86ff, #8a68ff);
-    }
-
-    .btn.danger:not(:disabled):hover {
-      background: linear-gradient(135deg, #ff5b79, #ff9967);
-    }
-
-    .btn:active:not(:disabled) {
-      transform: translateY(0);
-      box-shadow:
-        0 6px 18px rgba(8, 18, 56, 0.7),
-        0 0 0 1px rgba(110, 147, 230, 0.5);
-    }
-
-    .bet-stepper {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      padding: 4px 4px 4px 12px;
-      background: rgba(7, 11, 29, 0.96);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-subtle);
-    }
-
-    .bet-stepper label {
-      font-size: 11px;
-      color: var(--muted);
-      margin-right: 8px;
-    }
-
-    .bet-stepper-value {
-      min-width: 52px;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .bet-stepper-btns {
-      display: flex;
-      flex-direction: column;
-      margin-left: 4px;
-    }
-
-    .bet-stepper-btn {
-      width: 28px;
-      height: 20px;
-      padding: 0;
-      border: none;
-      background: rgba(79, 140, 255, 0.2);
-      color: var(--accent);
-      font-size: 14px;
-      line-height: 1;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 4px;
-      transition: background 0.15s ease;
-    }
-
-    .bet-stepper-btn:hover:not(:disabled) {
-      background: rgba(79, 140, 255, 0.4);
-    }
-
-    .bet-stepper-btn:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
-
-    .bet-stepper-btn:first-child {
-      border-radius: 4px 4px 0 0;
-    }
-
-    .bet-stepper-btn:last-child {
-      border-radius: 0 0 4px 4px;
-    }
-
-    .pot-odds-display {
-      padding: 6px 12px;
-      border-radius: var(--radius-pill);
-      background: rgba(10, 29, 42, 0.96);
-      border: 1px solid rgba(83, 245, 178, 0.35);
-      font-size: 12px;
-      color: var(--muted);
-      position: relative;
-    }
-
-    .pot-odds-display .pot-odds-value {
-      color: var(--success);
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .pot-odds-tooltip {
-      position: absolute;
-      right: 0;
-      top: calc(100% + 10px);
-      width: 260px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(9, 12, 24, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 20px 42px rgba(0,0,0,0.55);
-      color: rgba(235, 240, 255, 0.92);
-      font-size: 11px;
-      line-height: 1.35;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
       opacity: 0;
-      transform: translateY(-4px);
-      pointer-events: none;
-      transition: opacity 0.14s ease, transform 0.14s ease;
-      z-index: 20;
+      animation: fadeIn 0.5s ease 0.1s forwards;
     }
 
-    .pot-odds-display:hover .pot-odds-tooltip {
-      opacity: 1;
-      transform: translateY(0);
+    .logo {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--cyan);
     }
 
-    .equity-chart-block {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .equity-chart-title {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 6px;
-      letter-spacing: 0.02em;
-    }
-
-    .equity-chart {
-      width: 100%;
-      height: 250px;
-      display: block;
-    }
-
-    .mini-cards {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      vertical-align: middle;
-    }
-
-    .mini-card {
-      width: 30px;
-      height: 40px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: radial-gradient(circle at 20% 0, rgba(255,255,255,0.18), transparent 65%), #071022;
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 3px 3px 2px;
-      box-shadow:
-        0 10px 18px rgba(0, 0, 0, 0.7),
-        0 0 0 1px rgba(0, 0, 0, 0.75);
-      color: #f4f6ff;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .mini-card.red {
-      color: #ff6a84;
-    }
-
-    .mini-card .mini-rank {
-      font-size: 12px;
-      font-weight: 700;
-      line-height: 1;
-      align-self: flex-start;
-    }
-
-    .mini-card .mini-suit {
-      font-size: 11px;
-      line-height: 1;
-      align-self: flex-end;
-      opacity: 0.95;
-    }
-
-    .mini-card .mini-center {
-      font-size: 14px;
-      line-height: 1;
-      opacity: 0.9;
-    }
-
-    .hand-strength .value .hole-cards-note {
-      margin-left: 8px;
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.01em;
-    }
-
-    .odds-chip {
-      padding: 6px 11px;
-      border-radius: var(--radius-pill);
-      background: rgba(10, 29, 42, 0.96);
-      border: 1px solid rgba(83, 245, 178, 0.5);
-      display: inline-flex;
-      align-items: baseline;
-      gap: 6px;
-      font-size: 12px;
-    }
-
-    .odds-main {
-      color: var(--success);
-      font-weight: 850;
-      font-size: 18px;
-      font-variant-numeric: tabular-nums;
-      transition: transform 0.2s ease, color 0.2s ease;
-    }
-
-    .odds-main.odds-updated {
-      transform: scale(1.08);
-      color: #7ee4b4;
-    }
-
-    .odds-label {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .right-panel {
-      display: flex;
-      flex-direction: column;
-      background: radial-gradient(circle at top, rgba(79, 140, 255, 0.13), transparent 60%),
-        radial-gradient(circle at bottom, rgba(53, 214, 151, 0.1), transparent 55%),
-        var(--bg-alt);
-      padding: 18px 18px 16px;
-      gap: 12px;
-    }
-
-    .tutor-header {
+    .status {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .tutor-title {
-      font-size: 14px;
-      font-weight: 600;
-      display: flex;
-      gap: 6px;
-      align-items: baseline;
-    }
-
-    .tutor-subtitle {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .tutor-status {
-      font-size: 11px;
-      padding: 4px 9px;
-      border-radius: var(--radius-pill);
-      border: 1px solid rgba(157, 206, 255, 0.4);
-      background: rgba(6, 16, 40, 0.96);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      gap: 0.5rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
       color: var(--muted);
     }
 
     .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 20%, #ffffff 0, #35d697 60%);
-      box-shadow: 0 0 8px rgba(53, 214, 151, 0.9);
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: pulse 2s ease-in-out infinite;
     }
 
-    .status-dot.error {
-      background: radial-gradient(circle at 30% 20%, #ffffff 0, #ff4f6a 60%);
-      box-shadow: 0 0 8px rgba(255, 79, 106, 0.9);
-    }
-
-    .tutor-body {
-      flex: 1;
-      min-height: 0;
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      background: rgba(5, 10, 26, 0.95);
-      padding: 12px 12px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .tutor-stage-tag {
-      align-self: stretch;
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-      flex-wrap: wrap;
-      font-size: 20px;
-      font-weight: 850;
-      letter-spacing: 0.01em;
-      color: rgba(244, 246, 255, 0.98);
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(8, 14, 34, 0.92);
-    }
-
-    .tutor-stage-tag .rec-stage,
-    .tutor-stage-tag .rec-label {
-      font-size: 12px;
-      font-weight: 750;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .tutor-stage-tag .rec-sep {
-      font-size: 12px;
-      opacity: 0.55;
+    .hero-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
       letter-spacing: 0.2em;
+      color: var(--cyan-dim);
+      margin-bottom: 1.25rem;
+      opacity: 0;
+      animation: fadeIn 0.5s ease 0.2s forwards;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2rem, 6.5vw, 4rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeIn 0.6s ease 0.3s forwards;
+    }
+
+    h1 span {
+      color: var(--cyan);
+      position: relative;
+      display: inline-block;
+    }
+
+    h1 span::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: var(--cyan);
+      opacity: 0.4;
+    }
+
+    .tagline {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(0.6rem, 1.4vw, 0.75rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
+      line-height: 1.9;
+      max-width: 420px;
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fadeIn 0.5s ease 0.4s forwards;
     }
 
-    .tutor-stage-tag .rec-action {
-      font-size: 20px;
-      font-weight: 950;
-      letter-spacing: 0.02em;
-      color: rgba(83, 245, 178, 0.98);
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeIn 0.5s ease 0.45s forwards;
     }
 
-    .tutor-text {
-      flex: 1;
-      min-height: 80px;
-      max-height: 190px;
-      overflow-y: auto;
-      padding-right: 4px;
-      font-size: 13px;
-      line-height: 1.5;
-      color: #d6ddff;
+    .divider-line {
+      height: 1px;
+      width: 2rem;
+      background: var(--border);
     }
 
-    .tutor-text::-webkit-scrollbar {
-      width: 4px;
+    .divider-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
     }
 
-    .tutor-text::-webkit-scrollbar-thumb {
-      background: rgba(108, 134, 212, 0.7);
-      border-radius: 999px;
-    }
-
-    .tutor-text p + p {
-      margin-top: 6px;
-    }
-
-    .tutor-text ul {
-      margin: 4px 0 4px 18px;
-    }
-
-    .tutor-text li {
-      margin: 2px 0;
-    }
-
-    .tutor-footer {
+    .projects {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--muted);
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      padding-top: 6px;
-      margin-top: 2px;
+      gap: 0.6rem;
+      opacity: 0;
+      animation: fadeIn 0.5s ease 0.5s forwards;
     }
 
-    .hint-row {
+    .card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      text-decoration: none;
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s ease, background 0.25s ease;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--cyan);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 0%, rgba(0,198,255,0.03) 50%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .card:hover { border-color: var(--border-hover); background: var(--cyan-glow); }
+    .card:hover::before { opacity: 1; }
+    .card:hover::after  { opacity: 1; }
+    .card:hover .arrow  { color: var(--cyan); transform: translateX(4px); }
+    .card:hover .card-name { color: var(--cyan); }
+
+    .card-left { display: flex; flex-direction: column; gap: 0.35rem; }
+
+    .card-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.25s ease;
+    }
+
+    .card-desc {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    .card-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--cyan-dim);
+      border: 1px solid var(--border);
+      padding: 0.2em 0.5em;
+    }
+
+    .arrow {
+      font-size: 1rem;
+      color: var(--muted);
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    footer {
+      padding: 1.25rem 0;
+      border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      opacity: 0;
+      animation: fadeIn 0.5s ease 0.6s forwards;
     }
 
-    .hint-row span {
-      font-size: 11px;
-    }
-
-    .decision-log {
-      flex: 1;
-      min-height: 110px;
-      margin-top: 4px;
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      background: rgba(8, 14, 34, 0.92);
-      padding: 6px 10px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .decision-log-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-
-    .decision-entry {
-      display: grid;
-      grid-template-columns: 1fr 1fr 0.8fr 1.2fr;
-      gap: 4px 6px;
-      align-items: center;
-      font-size: 12px;
-      padding: 4px 0;
-      border-bottom: 1px dashed rgba(38, 50, 90, 0.9);
-    }
-
-    .decision-entry:last-child {
-      border-bottom: none;
-    }
-
-    .decision-stage {
-      color: var(--muted);
-    }
-
-    .decision-action {
-      font-weight: 500;
-      color: var(--text);
-    }
-
-    .decision-equity-hdr,
-    .decision-equity {
-      font-variant-numeric: tabular-nums;
-      color: var(--muted);
-    }
-
-    .decision-entry-header {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding-bottom: 4px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .decision-correct {
-      font-size: 11px;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .decision-correct.good {
-      color: var(--success);
-    }
-
-    .decision-correct.bad {
-      color: var(--danger);
-    }
-
-    .pill {
-      padding: 2px 7px;
-      border-radius: var(--radius-pill);
-      font-size: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(7, 12, 29, 0.95);
-    }
-
-    .pill.good {
-      border-color: rgba(84, 234, 174, 0.6);
-      background: rgba(10, 46, 35, 0.96);
-    }
-
-    .pill.bad {
-      border-color: rgba(255, 124, 144, 0.8);
-      background: rgba(45, 12, 22, 0.96);
-    }
-
-    .hand-strength {
-      font-size: 11px;
-      color: var(--muted);
-      display: flex;
-      gap: 6px;
-      align-items: baseline;
-    }
-
-    .hand-strength span.value {
-      color: var(--text);
-    }
-
-    .badge {
-      padding: 2px 7px;
-      border-radius: var(--radius-pill);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      font-size: 10px;
-      text-transform: uppercase;
+    .footer-id {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.62rem;
       letter-spacing: 0.12em;
       color: var(--muted);
     }
 
-    .badge.live {
-      border-color: rgba(97, 214, 169, 0.6);
-      color: #7ee4b4;
-      background: rgba(6, 36, 26, 0.9);
-    }
+    .footer-links { display: flex; gap: 1.5rem; }
 
-    .badge.disabled {
-      border-color: rgba(121, 129, 158, 0.7);
-      background: rgba(12, 15, 30, 0.9);
-      color: #8086a8;
-    }
-
-    .small-muted {
-      font-size: 11px;
+    .footer-links a {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
       color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
     }
 
-    .hand-result-banner {
-      margin-bottom: 12px;
-      padding: 12px 14px;
-      border-radius: var(--radius-md);
-      font-size: 15px;
-      font-weight: 600;
-      text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    .footer-links a:hover { color: var(--cyan); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    .hand-result-banner.win {
-      background: rgba(53, 214, 151, 0.15);
-      border-color: rgba(53, 214, 151, 0.5);
-      color: var(--success);
-    }
-
-    .hand-result-banner.loss {
-      background: rgba(255, 79, 106, 0.12);
-      border-color: rgba(255, 79, 106, 0.45);
-      color: var(--danger);
-    }
-
-    .hand-result-banner.fold {
-      background: rgba(154, 164, 198, 0.1);
-      border-color: rgba(154, 164, 198, 0.3);
-      color: var(--muted);
-    }
-
-    .hand-result-banner.tie {
-      background: rgba(79, 140, 255, 0.12);
-      border-color: rgba(79, 140, 255, 0.4);
-      color: var(--accent);
-    }
-
-    .community-placeholder {
-      width: 44px;
-      height: 60px;
-      border-radius: 8px;
-      border: 1px dashed rgba(255, 255, 255, 0.15);
-      background: rgba(10, 15, 35, 0.6);
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
     }
   </style>
 </head>
 <body>
-  <div class="app-shell">
-    <section class="table-panel">
-      <header class="header">
-        <div class="title-group">
-          <div class="title">Poker Tutor</div>
-          <div class="title-pill">Practice no-limit Texas Hold'em with a rules-based coach and live odds.</div>
-        </div>
-        <div class="session-chip-count" id="sessionChipCount">Session: $0</div>
-      </header>
+  <div class="wrapper">
 
-      <div class="table-wrapper">
-        <div class="table">
-          <div class="dealer-chip">D</div>
+    <div class="topbar">
+      <span class="logo">NANDIFY.AI</span>
+      <div class="status">
+        <span class="status-dot"></span>
+        <span>ONLINE</span>
+      </div>
+    </div>
 
-          <div class="community-area">
-            <div class="table-info-pills">
-              <div class="info-pill pot-pill"><span class="info-pill-label">POT</span><span id="potAmount">$0</span></div>
-              <div class="info-pill blinds-pill"><span class="info-pill-label">BLINDS</span><span id="blindsBox">$1 / $2</span></div>
-              <div class="info-pill stage-pill"><span class="info-pill-label">STAGE</span><span id="stageBox">Preflop</span></div>
-            </div>
-            <div class="community-cards" id="communityCards"></div>
-          </div>
+    <main>
+      <p class="hero-label">// IDENTITY UNKNOWN</p>
+      <h1>Building<br />in the <span>open</span></h1>
+      <p class="tagline">A collection of things made.<br />Code, tools, experiments.<br />No context required.</p>
 
-          <div class="player me" id="heroPlayer">
-            <div class="player-label me">
-              <span class="player-name"><span class="chip-indicator"></span> You</span>
-              <span class="player-stack" id="heroStack">$100</span>
-            </div>
-            <div class="cards-row" id="heroCards"></div>
-            <div class="player-showdown-line" id="heroFinalHand" style="display:none;"></div>
-            <div class="player-wl" id="heroWL" style="display:none;"></div>
-            <div class="player-action-pill" id="heroAction"></div>
-          </div>
-
-          <div class="player opponent-1" id="op1Player">
-            <div class="player-label">
-              <span class="player-name">Opponent 1</span>
-              <span class="player-stack" id="op1Stack">$100</span>
-            </div>
-            <div class="cards-row" id="op1Cards"></div>
-            <div class="player-showdown-line" id="op1FinalHand" style="display:none;"></div>
-            <div class="player-wl" id="op1WL" style="display:none;"></div>
-            <div class="player-action-pill" id="op1Action"></div>
-          </div>
-
-          <div class="player opponent-2" id="op2Player">
-            <div class="player-label">
-              <span class="player-name">Opponent 2</span>
-              <span class="player-stack" id="op2Stack">$100</span>
-            </div>
-            <div class="cards-row" id="op2Cards"></div>
-            <div class="player-showdown-line" id="op2FinalHand" style="display:none;"></div>
-            <div class="player-wl" id="op2WL" style="display:none;"></div>
-            <div class="player-action-pill" id="op2Action"></div>
-          </div>
-        </div>
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-label">Projects</span>
+        <div class="divider-line"></div>
       </div>
 
-      <div class="controls-row">
-        <div class="btn-group">
-          <button id="dealBtn" class="btn primary" type="button">Deal new hand</button>
-          <button id="checkBtn" class="btn secondary" type="button" disabled>Check</button>
-          <button id="betBtn" class="btn secondary" type="button" disabled>Bet</button>
-          <button id="foldBtn" class="btn danger" type="button" disabled>Fold</button>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap: wrap;">
-          <div class="bet-stepper">
-            <label>Bet</label>
-            <span class="bet-stepper-value" id="betStepperValue">$6</span>
-            <div class="bet-stepper-btns">
-              <button type="button" class="bet-stepper-btn" id="betStepperUp" aria-label="Increase bet">▲</button>
-              <button type="button" class="bet-stepper-btn" id="betStepperDown" aria-label="Decrease bet">▼</button>
-            </div>
+      <div class="projects">
+        <a href="/poker" class="card">
+          <div class="card-left">
+            <span class="card-name">Poker Tutor</span>
+            <span class="card-desc">// no-limit hold'em · live equity · pot odds coaching</span>
           </div>
-          <div class="odds-chip">
-            <span class="odds-main" id="winProb">--%</span>
-            <span class="odds-label">equity vs 2 opponents</span>
+          <div class="card-right">
+            <span class="tag">JS</span>
+            <span class="arrow">→</span>
           </div>
-          <div class="pot-odds-display" id="potOddsDisplay" style="display: none;">
-            Pot odds: <span class="pot-odds-value" id="potOddsValue">—</span>
-            <div class="pot-odds-tooltip" id="potOddsTooltip" role="tooltip"></div>
-          </div>
-        </div>
+        </a>
+        <!-- Add future projects here -->
       </div>
-    </section>
+    </main>
 
-    <section class="right-panel">
-      <div class="tutor-header">
-        <div>
-          <div class="tutor-title">Coach</div>
-          <div class="tutor-subtitle">Advice based on hand strength and pot odds.</div>
-        </div>
+    <footer>
+      <span class="footer-id">NODE_ID: NANDIFY // 2026</span>
+      <div class="footer-links">
+        <a href="https://github.com/agn230" target="_blank">GITHUB</a>
       </div>
+    </footer>
 
-      <div class="tutor-body">
-        <div class="hand-result-banner" id="handResultBanner" style="display: none;"></div>
-        <div class="tutor-stage-tag" id="tutorStageTag">No hand yet</div>
-        <div class="tutor-text" id="tutorText">
-          <p>Click <strong>Deal new hand</strong> to start. The coach will suggest the best move using your win probability and pot odds at each street.</p>
-          <p>3-handed cash game, $1 / $2 blinds, $100 starting stacks. Stacks carry over hand to hand; the session counter tracks your net.</p>
-        </div>
-        <div class="tutor-footer">
-          <div class="hand-strength">
-            Current hand:
-            <span class="value" id="handStrengthLabel">—</span>
-          </div>
-          <div class="equity-chart-block" id="equityChartBlock" style="display:none;">
-            <div class="equity-chart-title">Equity by stage</div>
-            <svg class="equity-chart" id="equityChart" viewBox="0 0 240 250" preserveAspectRatio="none" aria-label="Equity by stage chart"></svg>
-          </div>
-        </div>
-      </div>
-
-      <div class="decision-log" id="decisionLog">
-        <div class="decision-log-title">Decision review (this hand)</div>
-        <div class="small-muted">Each decision is rated Good or Poor based on your equity at that moment.</div>
-      </div>
-    </section>
   </div>
-
-  <script>
-    // --- Poker engine & utilities ---
-    const RANKS = ["2","3","4","5","6","7","8","9","T","J","Q","K","A"];
-    const SUITS = ["♣","♦","♥","♠"];
-    const HAND_CATEGORIES = [
-      "High Card",
-      "Pair",
-      "Two Pair",
-      "Three of a Kind",
-      "Straight",
-      "Flush",
-      "Full House",
-      "Four of a Kind",
-      "Straight Flush"
-    ];
-
-    function createDeck() {
-      const deck = [];
-      for (const r of RANKS) {
-        for (const s of SUITS) {
-          deck.push({ rank: r, suit: s });
-        }
-      }
-      return deck;
-    }
-
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    function drawCards(deck, n) {
-      const drawn = deck.splice(0, n);
-      return drawn;
-    }
-
-    function cardToString(card) {
-      return card.rank + card.suit;
-    }
-
-    function rankDisplay(rank) {
-      return rank === "T" ? "10" : rank;
-    }
-
-    function rankIndex(rank) {
-      return RANKS.indexOf(rank);
-    }
-
-    function evaluateHand7(cards7) {
-      // cards7: array of {rank, suit} length 7
-      let bestScore = null;
-      let bestMask = 0;
-      for (let a = 0; a < 7; a++) {
-        for (let b = a + 1; b < 7; b++) {
-          for (let c = b + 1; c < 7; c++) {
-            for (let d = c + 1; d < 7; d++) {
-              for (let e = d + 1; e < 7; e++) {
-                const five = [cards7[a], cards7[b], cards7[c], cards7[d], cards7[e]];
-                const score = evaluate5(five);
-                if (!bestScore || compareScore(score, bestScore) > 0) {
-                  bestScore = score;
-                  bestMask = (1 << a) | (1 << b) | (1 << c) | (1 << d) | (1 << e);
-                }
-              }
-            }
-          }
-        }
-      }
-      return { score: bestScore, usedMask: bestMask };
-    }
-
-    function evaluate5(cards) {
-      const ranks = cards.map(c => rankIndex(c.rank)).sort((a, b) => b - a);
-      const suits = cards.map(c => c.suit);
-      const rankCounts = {};
-      for (const r of ranks) {
-        rankCounts[r] = (rankCounts[r] || 0) + 1;
-      }
-
-      const uniqueRanks = [...new Set(ranks)];
-      let isFlush = new Set(suits).size === 1;
-      let isStraight = false;
-      let highStraight = -1;
-
-      if (uniqueRanks.length === 5) {
-        // normal straight
-        if (uniqueRanks[0] - uniqueRanks[4] === 4) {
-          isStraight = true;
-          highStraight = uniqueRanks[0];
-        } else {
-          // wheel A-2-3-4-5
-          const wheel = [12, 3, 2, 1, 0]; // A,5,4,3,2 indices
-          const isWheel = wheel.every(r => ranks.includes(r));
-          if (isWheel) {
-            isStraight = true;
-            highStraight = 3; // index for 5
-          }
-        }
-      }
-
-      const counts = Object.entries(rankCounts)
-        .map(([r, c]) => ({ rank: parseInt(r, 10), count: c }))
-        .sort((a, b) => {
-          if (b.count !== a.count) return b.count - a.count;
-          return b.rank - a.rank;
-        });
-
-      let category;
-      const kickers = [];
-
-      if (isStraight && isFlush) {
-        category = 8;
-        kickers.push(highStraight);
-      } else if (counts[0].count === 4) {
-        category = 7;
-        kickers.push(counts[0].rank, counts[1].rank);
-      } else if (counts[0].count === 3 && counts[1].count === 2) {
-        category = 6;
-        kickers.push(counts[0].rank, counts[1].rank);
-      } else if (isFlush) {
-        category = 5;
-        kickers.push(...ranks);
-      } else if (isStraight) {
-        category = 4;
-        kickers.push(highStraight);
-      } else if (counts[0].count === 3) {
-        category = 3;
-        kickers.push(
-          counts[0].rank,
-          ...counts.slice(1).map(c => c.rank)
-        );
-      } else if (counts[0].count === 2 && counts[1].count === 2) {
-        category = 2;
-        const highPair = Math.max(counts[0].rank, counts[1].rank);
-        const lowPair = Math.min(counts[0].rank, counts[1].rank);
-        const kickerRank = counts[2].rank;
-        kickers.push(highPair, lowPair, kickerRank);
-      } else if (counts[0].count === 2) {
-        category = 1;
-        kickers.push(
-          counts[0].rank,
-          ...counts.slice(1).map(c => c.rank)
-        );
-      } else {
-        category = 0;
-        kickers.push(...ranks);
-      }
-
-      return { category, kickers };
-    }
-
-    function compareScore(a, b) {
-      if (a.category !== b.category) return a.category - b.category;
-      const len = Math.max(a.kickers.length, b.kickers.length);
-      for (let i = 0; i < len; i++) {
-        const va = a.kickers[i] ?? -1;
-        const vb = b.kickers[i] ?? -1;
-        if (va !== vb) return va - vb;
-      }
-      return 0;
-    }
-
-    function describeScore(score) {
-      const label = HAND_CATEGORIES[score.category] ?? "Unknown";
-      return label;
-    }
-
-    function getPlayerHandStrengthLabel() {
-      if (!state.heroHand || state.heroHand.length !== 2) return "—";
-      const all = state.heroHand.concat(state.community);
-      if (all.length < 5) {
-        if (state.community.length === 0) {
-          const r0 = state.heroHand[0].rank, r1 = state.heroHand[1].rank;
-          const pair = r0 === r1;
-          return pair ? "Pocket pair (" + rankDisplay(r0) + "s)" : rankDisplay(r0) + rankDisplay(r1) + " (hole cards)";
-        }
-        return "—";
-      }
-      let bestScore = null;
-      if (all.length === 5) {
-        bestScore = evaluate5(all);
-      } else if (all.length === 6) {
-        for (let i = 0; i < 6; i++) {
-          const five = all.filter((_, j) => j !== i);
-          const s = evaluate5(five);
-          if (!bestScore || compareScore(s, bestScore) > 0) bestScore = s;
-        }
-      } else {
-        bestScore = evaluateHand7(all).score;
-      }
-      return describeScore(bestScore);
-    }
-
-    function getCurrentEquity() {
-      if (state.heroHand.length < 2) {
-        state.currentEquity = 0;
-        return 0;
-      }
-      const { winProb } = simulateEquity(state.heroHand, state.community, 2, 450);
-      state.currentEquity = winProb;
-      return winProb;
-    }
-
-    function simulateEquity(heroCards, communityCards, numOpponents = 2, iterations = 600) {
-      if (heroCards.length !== 2) return { winProb: 0 };
-      const used = new Set(heroCards.concat(communityCards).map(cardToString));
-      let wins = 0;
-      let ties = 0;
-      let total = 0;
-
-      for (let i = 0; i < iterations; i++) {
-        let deck = createDeck().filter(c => !used.has(cardToString(c)));
-        shuffle(deck);
-
-        const neededBoard = 5 - communityCards.length;
-        const simBoard = communityCards.concat(drawCards(deck, neededBoard));
-
-        const hero7 = heroCards.concat(simBoard);
-        const heroEval = evaluateHand7(hero7).score;
-
-        let heroBest = true;
-        let heroTie = false;
-
-        for (let o = 0; o < numOpponents; o++) {
-          const oppHole = drawCards(deck, 2);
-          const opp7 = oppHole.concat(simBoard);
-          const oppEval = evaluateHand7(opp7).score;
-          const cmp = compareScore(heroEval, oppEval);
-          if (cmp < 0) {
-            heroBest = false;
-            heroTie = false;
-            break;
-          } else if (cmp === 0) {
-            heroTie = true;
-          }
-        }
-
-        if (heroBest) {
-          if (heroTie) ties++;
-          else wins++;
-        }
-        total++;
-      }
-
-      const equity = (wins + ties * 0.5) / Math.max(total, 1);
-      return { winProb: equity };
-    }
-
-    // --- Rules-based coach ---
-    function getCoachAdvice() {
-      if (state.heroHand.length < 2) {
-        return { bestAction: "check", summary: "Deal a hand to get advice.", explanation: "" };
-      }
-      const equity = state.currentEquity != null ? state.currentEquity : getCurrentEquity();
-      const pct = Math.round(equity * 1000) / 10;
-      const pot = state.pot;
-      const stage = state.stage;
-      const betSizeInput = state.betSize ?? 6;
-      const potOddsInfo = getPotOddsInfo();
-      const potOdds = potOddsInfo ? potOddsInfo.requiredEquity : (pot > 0 ? betSizeInput / (pot + betSizeInput) : 0);
-      let potOddsLine = "";
-      if (potOddsInfo) {
-        const eqPct = Math.round(equity * 1000) / 10;
-        const needPct = Math.round(potOddsInfo.requiredEquity * 1000) / 10;
-        potOddsLine = eqPct >= needPct ? "Pot odds favor calling." : "Pot odds suggest folding.";
-      }
-
-      if (equity >= 0.5) {
-        return {
-          bestAction: "bet",
-          summary: ("Strong hand – you have the edge." + (potOddsLine ? " " + potOddsLine : "")),
-          explanation: `Your win probability is ${pct.toFixed(1)}%. With this much equity, betting builds the pot and gets value. Checking is acceptable but leaves money on the table. Folding would be a mistake.`
-        };
-      }
-      if (equity >= 0.38) {
-        return {
-          bestAction: "bet",
-          summary: ("Good hand – lean toward betting." + (potOddsLine ? " " + potOddsLine : "")),
-          explanation: `You have ${pct.toFixed(1)}% equity. Betting is positive expected value here; checking is reasonable if you want to pot-control. Don't fold.`
-        };
-      }
-      if (equity >= 0.28) {
-        return {
-          bestAction: "check",
-          summary: ("Marginal hand – check to see the next card cheaply." + (potOddsLine ? " " + potOddsLine : "")),
-          explanation: `Your equity is ${pct.toFixed(1)}%. Checking keeps the pot small and lets you reassess on the next street. Betting can be okay in position, but folding is too tight.`
-        };
-      }
-      if (equity >= 0.18) {
-        return {
-          bestAction: "check",
-          summary: ("Weak hand – check or fold depending on pot odds." + (potOddsLine ? " " + potOddsLine : "")),
-          explanation: `Only ${pct.toFixed(1)}% equity. If you would need to call a bet, compare your equity to the pot odds threshold.`
-        };
-      }
-      return {
-        bestAction: "fold",
-        summary: ("Very weak – folding is correct." + (potOddsLine ? " " + potOddsLine : "")),
-        explanation: `Your win probability is ${pct.toFixed(1)}%. With this little equity, continuing is negative expected value. Save your chips for better spots.`
-      };
-    }
-
-    function evaluateDecision(entry) {
-      const eq = entry.equity;
-      if (eq == null || typeof eq !== "number") {
-        entry.correct = null;
-        entry.explainer = "";
-        return;
-      }
-      const action = entry.action;
-      if (action === "fold") {
-        if (eq < 0.28) {
-          entry.correct = true;
-          entry.explainer = "Correct fold with low equity.";
-        } else if (eq > 0.45) {
-          entry.correct = false;
-          entry.explainer = "Folding was too tight; you had strong equity.";
-        } else {
-          entry.correct = eq < 0.38;
-          entry.explainer = eq < 0.38 ? "Reasonable fold." : "Marginal – consider continuing.";
-        }
-        return;
-      }
-      if (action === "bet") {
-        if (eq >= 0.35) {
-          entry.correct = true;
-          entry.explainer = "Good bet with sufficient equity.";
-        } else if (eq < 0.22) {
-          entry.correct = false;
-          entry.explainer = "Betting with very low equity is -EV.";
-        } else {
-          entry.correct = true;
-          entry.explainer = "Aggressive but acceptable.";
-        }
-        return;
-      }
-      if (action === "check") {
-        if (eq >= 0.25 && eq <= 0.55) {
-          entry.correct = true;
-          entry.explainer = "Sensible check for this equity.";
-        } else if (eq > 0.58) {
-          entry.correct = false;
-          entry.explainer = "You had strong equity; betting would be better.";
-        } else if (eq < 0.22) {
-          entry.correct = false;
-          entry.explainer = "Very low equity; folding was an option.";
-        } else {
-          entry.correct = true;
-          entry.explainer = "Reasonable check.";
-        }
-      }
-    }
-
-    // --- Game state ---
-    const STAGES = ["preflop", "flop", "turn", "river", "showdown"];
-    const SMALL_BLIND = 1;
-    const BIG_BLIND = 2;
-    const PLAYER_POS_KEYS = ["hero", "op1", "op2"];
-    const PLAYER_LABELS = { hero: "You", op1: "Opponent 1", op2: "Opponent 2" };
-
-    const state = {
-      deck: [],
-      heroHand: [],
-      op1Hand: [],
-      op2Hand: [],
-      community: [],
-      stage: "idle",
-      pot: 0,
-      heroStack: 100,
-      op1Stack: 100,
-      op2Stack: 100,
-      lastBet: 0,
-      decisions: [],
-      currentEquity: null,
-      equityStreet: { preflop: null, flop: null, turn: null, river: null },
-      betSize: 6,
-      sessionStartStack: 100,
-      handNumber: 0,
-      buttonPos: -1,
-      blinds: { sbKey: null, bbKey: null }
-    };
-
-    // --- DOM helpers ---
-    const el = id => document.getElementById(id);
-
-    const heroCardsEl = el("heroCards");
-    const op1CardsEl = el("op1Cards");
-    const op2CardsEl = el("op2Cards");
-    const communityEl = el("communityCards");
-    const potAmountEl = el("potAmount");
-    const blindsBoxEl = el("blindsBox");
-    const stageBoxEl = el("stageBox");
-    const heroActionEl = el("heroAction");
-    const op1ActionEl = el("op1Action");
-    const op2ActionEl = el("op2Action");
-    const winProbEl = el("winProb");
-    const handStrengthLabelEl = el("handStrengthLabel");
-    const decisionLogEl = el("decisionLog");
-    const tutorTextEl = el("tutorText");
-    const tutorStageTagEl = el("tutorStageTag");
-    const handResultBannerEl = el("handResultBanner");
-    const potOddsTooltipEl = el("potOddsTooltip");
-    const equityChartBlockEl = el("equityChartBlock");
-    const equityChartEl = el("equityChart");
-
-    const heroPlayerEl = el("heroPlayer");
-    const op1PlayerEl = el("op1Player");
-    const op2PlayerEl = el("op2Player");
-    const heroFinalHandEl = el("heroFinalHand");
-    const op1FinalHandEl = el("op1FinalHand");
-    const op2FinalHandEl = el("op2FinalHand");
-    const heroWLEl = el("heroWL");
-    const op1WLEl = el("op1WL");
-    const op2WLEl = el("op2WL");
-
-    function posToKey(pos) {
-      return PLAYER_POS_KEYS[((pos % 3) + 3) % 3];
-    }
-
-    function stackProp(playerKey) {
-      if (playerKey === "hero") return "heroStack";
-      if (playerKey === "op1") return "op1Stack";
-      return "op2Stack";
-    }
-
-    function takeChips(playerKey, amount) {
-      const prop = stackProp(playerKey);
-      const want = Math.max(0, amount | 0);
-      const taken = Math.min(state[prop], want);
-      state[prop] -= taken;
-      return taken;
-    }
-
-    function awardChips(playerKey, amount) {
-      const prop = stackProp(playerKey);
-      state[prop] += Math.max(0, amount | 0);
-    }
-
-    function setPlayerAction(playerKey, text) {
-      if (playerKey === "hero") heroActionEl.textContent = text;
-      else if (playerKey === "op1") op1ActionEl.textContent = text;
-      else op2ActionEl.textContent = text;
-    }
-
-    function computeBlinds() {
-      const sbKey = posToKey(state.buttonPos + 1);
-      const bbKey = posToKey(state.buttonPos + 2);
-      state.blinds = { sbKey, bbKey };
-      return state.blinds;
-    }
-
-    function settlePotToWinners(winners) {
-      const pot = state.pot | 0;
-      if (pot <= 0) return;
-      const n = Array.isArray(winners) ? winners.length : 0;
-      if (n <= 0) return;
-
-      const base = Math.floor(pot / n);
-      let remainder = pot - base * n;
-
-      winners.forEach(k => awardChips(k, base));
-
-      // Distribute any odd chips starting from small blind position.
-      const order = [state.blinds?.sbKey, state.blinds?.bbKey, posToKey(state.buttonPos)].filter(Boolean);
-      for (const k of order) {
-        if (remainder <= 0) break;
-        if (winners.includes(k)) {
-          awardChips(k, 1);
-          remainder -= 1;
-        }
-      }
-
-      state.pot = 0;
-    }
-
-    // --- Rendering ---
-    const STREET_ORDER = ["preflop", "flop", "turn", "river"];
-    const STREET_LABELS = ["Preflop", "Flop", "Turn", "River"];
-
-    function isRedSuit(suit) {
-      return suit === "♥" || suit === "♦";
-    }
-
-    function holeCardsMiniHTML(cards) {
-      if (!cards || cards.length !== 2) return "—";
-      return `
-        <span class="mini-cards" aria-label="Hole cards">
-          ${cards.map(card => `
-            <span class="mini-card ${isRedSuit(card.suit) ? "red" : ""}" aria-label="${rankDisplay(card.rank)}${card.suit}">
-              <span class="mini-rank">${rankDisplay(card.rank)}</span>
-              <span class="mini-center">${card.suit}</span>
-              <span class="mini-suit">${card.suit}</span>
-            </span>
-          `).join("")}
-        </span>
-      `;
-    }
-
-    function renderCoachHandStrength() {
-      if (!handStrengthLabelEl) return;
-      if (!state.heroHand || state.heroHand.length !== 2) {
-        handStrengthLabelEl.textContent = "—";
-        return;
-      }
-      if (state.community.length === 0) {
-        const pair = state.heroHand[0].rank === state.heroHand[1].rank;
-        handStrengthLabelEl.innerHTML = holeCardsMiniHTML(state.heroHand) +
-          `<span class="hole-cards-note">(${pair ? "pocket pair" : "hole cards"})</span>`;
-        return;
-      }
-      handStrengthLabelEl.textContent = getPlayerHandStrengthLabel();
-    }
-
-    function recordEquityForStreet() {
-      if (!state || typeof state.currentEquity !== "number") return;
-      if (!STREET_ORDER.includes(state.stage)) return;
-      if (state.equityStreet) state.equityStreet[state.stage] = state.currentEquity;
-    }
-
-    function renderEquityChart() {
-      if (!equityChartEl || !equityChartBlockEl) return;
-      const shouldShow = state.heroHand && state.heroHand.length === 2 && state.stage !== "idle";
-      equityChartBlockEl.style.display = shouldShow ? "" : "none";
-      if (!shouldShow) {
-        equityChartEl.innerHTML = "";
-        return;
-      }
-
-      const W = 240, H = 250;
-      const padL = 34, padR = 12, padT = 12, padB = 28;
-      const plotW = W - padL - padR;
-      const plotH = H - padT - padB;
-      const xStep = plotW / 3;
-
-      const points = STREET_ORDER.map((street, i) => {
-        const eq = state.equityStreet?.[street];
-        if (eq == null || Number.isNaN(eq)) return null;
-        const x = padL + i * xStep;
-        const y = padT + (1 - Math.max(0, Math.min(1, eq))) * plotH;
-        return { x, y };
-      });
-
-      const known = points.filter(Boolean);
-      const linePts = [];
-      for (let i = 0; i < points.length; i++) {
-        if (!points[i]) break;
-        linePts.push(points[i]);
-      }
-
-      const grid = [0, 0.25, 0.5, 0.75, 1].map(v => {
-        const y = padT + (1 - v) * plotH;
-        return `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="rgba(255,255,255,0.1)" stroke-width="1" />`;
-      }).join("");
-
-      const yLabels = [
-        { v: 1, label: "100" },
-        { v: 0.75, label: "75" },
-        { v: 0.5, label: "50" },
-        { v: 0.25, label: "25" },
-        { v: 0, label: "0" }
-      ].map(t => {
-        const y = padT + (1 - t.v) * plotH + 4;
-        return `<text x="${padL - 8}" y="${y}" text-anchor="end" font-size="11" fill="rgba(154,164,198,0.85)">${t.label}</text>`;
-      }).join("");
-
-      const xLabels = STREET_LABELS.map((label, i) => {
-        const x = padL + i * xStep;
-        return `<text x="${x}" y="${H - 8}" text-anchor="middle" font-size="12" fill="rgba(154,164,198,0.85)">${label}</text>`;
-      }).join("");
-
-      const line = linePts.length >= 2
-        ? `<polyline fill="none" stroke="rgba(83,245,178,0.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="${linePts.map(p => `${p.x},${p.y}`).join(" ")}" />`
-        : "";
-
-      const dots = known.map(p => `
-        <circle cx="${p.x}" cy="${p.y}" r="3.4" fill="rgba(83,245,178,0.95)" />
-        <circle cx="${p.x}" cy="${p.y}" r="6.2" fill="rgba(83,245,178,0.12)" />
-      `).join("");
-
-      equityChartEl.innerHTML = `
-        <rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" rx="10" ry="10" fill="rgba(10, 15, 35, 0.45)" stroke="rgba(255,255,255,0.08)" />
-        ${grid}
-        ${yLabels}
-        ${xLabels}
-        ${line}
-        ${dots}
-      `;
-    }
-
-    function clearShowdownUI() {
-      const players = [heroPlayerEl, op1PlayerEl, op2PlayerEl].filter(Boolean);
-      players.forEach(p => {
-        p.classList.remove("winner", "loser");
-      });
-      [heroFinalHandEl, op1FinalHandEl, op2FinalHandEl].forEach(elm => {
-        if (!elm) return;
-        elm.textContent = "";
-        elm.style.display = "none";
-      });
-      [heroWLEl, op1WLEl, op2WLEl].forEach(elm => {
-        if (!elm) return;
-        elm.textContent = "";
-        elm.className = "player-wl";
-        elm.style.display = "none";
-      });
-    }
-
-    function setShowdownUI({ heroScore, op1Score, op2Score, forcedWinners = null } = {}) {
-      if (!heroScore || !op1Score || !op2Score) return;
-      const scores = {
-        hero: heroScore,
-        op1: op1Score,
-        op2: op2Score
-      };
-
-      let winners;
-      if (Array.isArray(forcedWinners) && forcedWinners.length) {
-        winners = forcedWinners;
-      } else {
-        let best = scores.hero;
-        for (const key of ["op1", "op2"]) {
-          if (compareScore(scores[key], best) > 0) best = scores[key];
-        }
-        winners = ["hero", "op1", "op2"].filter(key => compareScore(scores[key], best) === 0);
-      }
-
-      const cfg = [
-        { key: "hero", playerEl: heroPlayerEl, finalEl: heroFinalHandEl, wlEl: heroWLEl },
-        { key: "op1", playerEl: op1PlayerEl, finalEl: op1FinalHandEl, wlEl: op1WLEl },
-        { key: "op2", playerEl: op2PlayerEl, finalEl: op2FinalHandEl, wlEl: op2WLEl }
-      ];
-
-      cfg.forEach(p => {
-        if (!p.playerEl || !p.finalEl || !p.wlEl) return;
-        const handName = describeScore(scores[p.key]);
-        p.finalEl.textContent = handName;
-        p.finalEl.style.display = "";
-        const isWinner = winners.includes(p.key);
-        p.playerEl.classList.toggle("winner", isWinner);
-        p.playerEl.classList.toggle("loser", !isWinner);
-        p.wlEl.textContent = isWinner ? "W" : "L";
-        p.wlEl.className = "player-wl " + (isWinner ? "win" : "loss");
-        p.wlEl.style.display = "";
-      });
-    }
-
-    function renderCard(card, faceDown = false) {
-      const div = document.createElement("div");
-      div.className = "card" + (faceDown ? " face-down" : "");
-      if (faceDown || !card) {
-        return div;
-      }
-      const isRed = isRedSuit(card.suit);
-      if (isRed) div.classList.add("red");
-
-      const rankStr = rankDisplay(card.rank);
-      const suitStr = card.suit;
-
-      const cornerTl = document.createElement("div");
-      cornerTl.className = "card-corner card-corner-tl";
-      cornerTl.innerHTML = `<span class="card-rank">${rankStr}</span><span class="card-suit-small">${suitStr}</span>`;
-
-      const centerDiv = document.createElement("div");
-      centerDiv.className = "card-center-suit";
-      centerDiv.textContent = suitStr;
-
-      const cornerBr = document.createElement("div");
-      cornerBr.className = "card-corner card-corner-br";
-      cornerBr.innerHTML = `<span class="card-rank">${rankStr}</span><span class="card-suit-small">${suitStr}</span>`;
-
-      div.appendChild(cornerTl);
-      div.appendChild(centerDiv);
-      div.appendChild(cornerBr);
-      return div;
-    }
-
-    function renderHands() {
-      heroCardsEl.innerHTML = "";
-      op1CardsEl.innerHTML = "";
-      op2CardsEl.innerHTML = "";
-      communityEl.innerHTML = "";
-
-      state.heroHand.forEach(c => heroCardsEl.appendChild(renderCard(c, false)));
-      if (state.heroHand.length === 0) {
-        heroCardsEl.appendChild(renderCard(null, true));
-        heroCardsEl.appendChild(renderCard(null, true));
-      }
-
-      const showOpponentCards = state.stage === "showdown";
-      const opp1Count = state.op1Hand.length || 2;
-      const opp2Count = state.op2Hand.length || 2;
-      for (let i = 0; i < opp1Count; i++) {
-        op1CardsEl.appendChild(renderCard(state.op1Hand[i], !showOpponentCards));
-      }
-      for (let i = 0; i < opp2Count; i++) {
-        op2CardsEl.appendChild(renderCard(state.op2Hand[i], !showOpponentCards));
-      }
-
-      state.community.forEach(c => communityEl.appendChild(renderCard(c, false)));
-      const placeholders = 5 - state.community.length;
-      for (let i = 0; i < placeholders; i++) {
-        const placeholder = document.createElement("div");
-        placeholder.className = "community-placeholder";
-        communityEl.appendChild(placeholder);
-      }
-
-      el("heroStack").textContent = "$" + state.heroStack;
-      el("op1Stack").textContent = "$" + state.op1Stack;
-      el("op2Stack").textContent = "$" + state.op2Stack;
-      if (potAmountEl) potAmountEl.textContent = "$" + state.pot;
-      if (blindsBoxEl) blindsBoxEl.textContent = `$${SMALL_BLIND} / $${BIG_BLIND}`;
-      updateBetStepperDisplay();
-      updateSessionDisplay();
-
-      const stageMap = {
-        idle: "Click Deal to start",
-        preflop: "Preflop",
-        flop: "Flop",
-        turn: "Turn",
-        river: "River",
-        showdown: "Showdown"
-      };
-      if (stageBoxEl) stageBoxEl.textContent = stageMap[state.stage] || "";
-    }
-
-    function renderWinProb() {
-      if (state.heroHand.length < 2) {
-        state.currentEquity = null;
-        winProbEl.textContent = "--%";
-        renderCoachHandStrength();
-        renderEquityChart();
-        return;
-      }
-      getCurrentEquity();
-      const pct = Math.round(state.currentEquity * 1000) / 10;
-      winProbEl.textContent = `${isNaN(pct) ? "--" : pct.toFixed(1)}%`;
-      renderCoachHandStrength();
-      recordEquityForStreet();
-      renderEquityChart();
-      winProbEl.classList.add("odds-updated");
-      setTimeout(() => winProbEl.classList.remove("odds-updated"), 300);
-    }
-
-    function renderDecisions() {
-      decisionLogEl.innerHTML = `
-        <div class="decision-log-title">Decision review (this hand)</div>
-      `;
-
-      if (state.decisions.length === 0) {
-        const div = document.createElement("div");
-        div.className = "small-muted";
-        div.textContent = "Your decisions from the last complete hand will appear here.";
-        decisionLogEl.appendChild(div);
-        return;
-      }
-
-      const header = document.createElement("div");
-      header.className = "decision-entry decision-entry-header";
-      header.innerHTML = "<span class=\"decision-stage\">Street</span><span class=\"decision-action\">Action</span><span class=\"decision-equity-hdr\">Equity</span><span>Verdict</span>";
-      decisionLogEl.appendChild(header);
-
-      state.decisions.forEach(dec => {
-        const row = document.createElement("div");
-        row.className = "decision-entry";
-        const stage = document.createElement("div");
-        stage.className = "decision-stage";
-        stage.textContent = dec.stageLabel;
-        const action = document.createElement("div");
-        action.className = "decision-action";
-        action.textContent = dec.actionLabel;
-        const equityCell = document.createElement("div");
-        equityCell.className = "decision-equity";
-        equityCell.textContent = dec.equity != null ? (Math.round(dec.equity * 1000) / 10).toFixed(1) + "%" : "—";
-        const correctness = document.createElement("div");
-        correctness.className = "decision-correct " + (dec.correct === true ? "good" : dec.correct === false ? "bad" : "");
-        const pill = document.createElement("span");
-        pill.className = "pill " + (dec.correct === true ? "good" : dec.correct === false ? "bad" : "");
-        pill.textContent = dec.correct === true ? "Good" : dec.correct === false ? "Poor" : "—";
-        correctness.appendChild(pill);
-        if (dec.explainer) {
-          const expl = document.createElement("span");
-          expl.textContent = " " + dec.explainer;
-          correctness.appendChild(expl);
-        }
-
-        row.appendChild(stage);
-        row.appendChild(action);
-        row.appendChild(equityCell);
-        row.appendChild(correctness);
-        decisionLogEl.appendChild(row);
-      });
-    }
-
-    function setButtonsForStage() {
-      const dealBtn = el("dealBtn");
-      const checkBtn = el("checkBtn");
-      const betBtn = el("betBtn");
-      const foldBtn = el("foldBtn");
-
-      if (state.stage === "idle" || state.stage === "showdown") {
-        dealBtn.disabled = false;
-        checkBtn.disabled = true;
-        betBtn.disabled = true;
-        foldBtn.disabled = true;
-      } else {
-        dealBtn.disabled = true;
-        checkBtn.disabled = false;
-        betBtn.disabled = false;
-        foldBtn.disabled = false;
-      }
-      updatePotOddsDisplay();
-    }
-
-    function clampBetSize() {
-      const maxBet = state.heroStack;
-      const minBet = Math.min(6, state.heroStack);
-      if (state.betSize == null || state.betSize < minBet) state.betSize = minBet;
-      if (state.betSize > maxBet) state.betSize = maxBet;
-      state.betSize = minBet + Math.round((state.betSize - minBet) / 2) * 2;
-      state.betSize = Math.min(maxBet, Math.max(minBet, state.betSize));
-    }
-
-    function updateBetStepperDisplay() {
-      clampBetSize();
-      const valEl = el("betStepperValue");
-      if (valEl) valEl.textContent = "$" + (state.betSize ?? 6);
-      const upBtn = el("betStepperUp");
-      const downBtn = el("betStepperDown");
-      if (upBtn) upBtn.disabled = (state.betSize ?? 6) >= state.heroStack;
-      if (downBtn) downBtn.disabled = (state.betSize ?? 6) <= Math.min(6, state.heroStack);
-    }
-
-    function getPotOddsInfo() {
-      const isPlayerTurn = state.stage !== "idle" && state.stage !== "showdown";
-      if (!isPlayerTurn) return null;
-      const toCall = state.betSize ?? 6;
-      const pot = state.pot;
-      const total = pot + toCall;
-      const requiredEquity = total > 0 ? (toCall / total) : 0;
-      return { pot, toCall, total, requiredEquity };
-    }
-
-    function updatePotOddsDisplay() {
-      const container = el("potOddsDisplay");
-      const valueEl = el("potOddsValue");
-      if (!container || !valueEl) return;
-      const info = getPotOddsInfo();
-      if (!info) {
-        container.style.display = "none";
-        return;
-      }
-      container.style.display = "";
-      const pct = info.total > 0 ? Math.round((info.requiredEquity) * 1000) / 10 : 0;
-      valueEl.textContent = "need ~" + pct.toFixed(1) + "% equity to call";
-      if (potOddsTooltipEl) {
-        const needPct = (info.requiredEquity * 100);
-        potOddsTooltipEl.innerHTML = `
-          <div style="color: rgba(235,240,255,0.92); font-weight: 650; margin-bottom: 6px;">How this is calculated</div>
-          <div>Pot is <strong>$${info.pot}</strong>, you must call <strong>$${info.toCall}</strong>.</div>
-          <div style="margin-top: 6px;">You need:</div>
-          <div style="margin-top: 2px; font-variant-numeric: tabular-nums;">
-            <strong>${info.toCall}</strong> / (<strong>${info.pot}</strong> + <strong>${info.toCall}</strong>) = <strong>${needPct.toFixed(1)}%</strong> equity
-          </div>
-        `;
-      }
-    }
-
-    function updateSessionDisplay() {
-      const elm = el("sessionChipCount");
-      if (!elm) return;
-      const start = state.sessionStartStack ?? 100;
-      const diff = state.heroStack - start;
-      if (diff > 0) {
-        elm.textContent = "Session: +$" + diff;
-        elm.className = "session-chip-count up";
-      } else if (diff < 0) {
-        elm.textContent = "Session: -$" + Math.abs(diff);
-        elm.className = "session-chip-count down";
-      } else {
-        elm.textContent = "Session: $0";
-        elm.className = "session-chip-count";
-      }
-    }
-
-    function resetActions() {
-      heroActionEl.textContent = "";
-      op1ActionEl.textContent = "";
-      op2ActionEl.textContent = "";
-    }
-
-    // --- Game flow ---
-    function startHand() {
-      state.handNumber = (state.handNumber ?? 0) + 1;
-      state.buttonPos = (((state.buttonPos ?? -1) + 1) % 3 + 3) % 3;
-      computeBlinds();
-
-      state.deck = shuffle(createDeck());
-      state.heroHand = drawCards(state.deck, 2);
-      state.op1Hand = drawCards(state.deck, 2);
-      state.op2Hand = drawCards(state.deck, 2);
-      state.community = [];
-      state.stage = "preflop";
-      state.pot = 0;
-      state.pot += takeChips(state.blinds.sbKey, SMALL_BLIND);
-      state.pot += takeChips(state.blinds.bbKey, BIG_BLIND);
-      state.lastBet = 0;
-      state.decisions = [];
-      state.currentEquity = null;
-      state.equityStreet = { preflop: null, flop: null, turn: null, river: null };
-      clampBetSize();
-      resetActions();
-      setPlayerAction(state.blinds.sbKey, `Posts SB $${SMALL_BLIND}`);
-      setPlayerAction(state.blinds.bbKey, `Posts BB $${BIG_BLIND}`);
-      handResultBannerEl.style.display = "none";
-      clearShowdownUI();
-      renderHands();
-      renderWinProb();
-      updateCoachPanel();
-      updateBetStepperDisplay();
-      updatePotOddsDisplay();
-      updateSessionDisplay();
-      renderDecisions();
-      setButtonsForStage();
-    }
-
-    function revealNextStreet() {
-      if (state.stage === "preflop") {
-        state.community = state.community.concat(drawCards(state.deck, 3));
-        state.stage = "flop";
-      } else if (state.stage === "flop") {
-        state.community = state.community.concat(drawCards(state.deck, 1));
-        state.stage = "turn";
-      } else if (state.stage === "turn") {
-        state.community = state.community.concat(drawCards(state.deck, 1));
-        state.stage = "river";
-      } else if (state.stage === "river") {
-        state.stage = "showdown";
-      }
-      resetActions();
-      renderHands();
-      renderWinProb();
-      if (state.stage === "showdown") {
-        finishHand();
-      } else {
-        updateCoachPanel();
-      }
-      setButtonsForStage();
-    }
-
-    function finishHand() {
-      const hero7 = state.heroHand.concat(state.community);
-      const op1_7 = state.op1Hand.concat(state.community);
-      const op2_7 = state.op2Hand.concat(state.community);
-      const heroScore = evaluateHand7(hero7).score;
-      const op1Score = evaluateHand7(op1_7).score;
-      const op2Score = evaluateHand7(op2_7).score;
-      const scores = { hero: heroScore, op1: op1Score, op2: op2Score };
-      let best = scores.hero;
-      for (const key of ["op1", "op2"]) {
-        if (compareScore(scores[key], best) > 0) best = scores[key];
-      }
-      const winners = ["hero", "op1", "op2"].filter(key => compareScore(scores[key], best) === 0);
-
-      state.decisions.forEach(evaluateDecision);
-      settlePotToWinners(winners);
-      renderHands();
-      setShowdownUI({ heroScore, op1Score, op2Score, forcedWinners: winners });
-      updateSessionDisplay();
-      updateBetStepperDisplay();
-      const description = describeScore(heroScore);
-      const heroInWinners = winners.includes("hero");
-      const heroResult = heroInWinners ? (winners.length === 1 ? "win" : "tie") : "loss";
-      handResultBannerEl.style.display = "block";
-      handResultBannerEl.className = "hand-result-banner " + (heroResult === "win" ? "win" : heroResult === "loss" ? "loss" : "tie");
-      handResultBannerEl.textContent = heroResult === "win"
-        ? "You won the pot! — " + description
-        : heroResult === "loss"
-          ? "You lost — " + description
-          : "You chopped the pot — " + description;
-      tutorStageTagEl.innerHTML = `<span class="rec-stage">Showdown</span><span class="rec-sep">•</span><span class="rec-label">Result</span><span class="rec-action">${heroResult === "win" ? "Won" : heroResult === "loss" ? "Lost" : "Chopped"}</span>`;
-      tutorTextEl.innerHTML = "<p>Review the decision log below – each choice is rated Good or Poor based on your equity at that moment.</p>";
-      renderDecisions();
-      setButtonsForStage();
-    }
-
-    function currentStageLabel() {
-      switch (state.stage) {
-        case "preflop": return "Preflop";
-        case "flop": return "Flop";
-        case "turn": return "Turn";
-        case "river": return "River";
-        default: return "Unknown";
-      }
-    }
-
-    function recordDecision(action, betSize) {
-      const stageLabel = currentStageLabel();
-      let actionLabel = action.charAt(0).toUpperCase() + action.slice(1);
-      if (action === "bet") {
-        actionLabel = `Bet $${betSize}`;
-      }
-      const entry = {
-        stage: state.stage,
-        stageLabel,
-        action,
-        actionLabel,
-        pot: state.pot,
-        equity: state.heroHand.length === 2 ? getCurrentEquity() : null,
-        winProbSnapshot: winProbEl.textContent,
-        correct: null,
-        explainer: null
-      };
-      state.decisions.push(entry);
-      return entry;
-    }
-
-    function updateCoachPanel() {
-      const advice = getCoachAdvice();
-      if (state.stage === "idle") {
-        tutorStageTagEl.textContent = "No hand yet";
-      } else if (state.stage !== "showdown") {
-        tutorStageTagEl.innerHTML = `<span class="rec-stage">${currentStageLabel()}</span><span class="rec-sep">•</span><span class="rec-label">Recommended</span><span class="rec-action">${advice.bestAction}</span>`;
-      }
-      tutorTextEl.innerHTML = "<p><strong>" + advice.summary + "</strong></p>" + (advice.explanation ? "<p>" + advice.explanation + "</p>" : "");
-    }
-
-    // --- Event handlers ---
-    el("dealBtn").addEventListener("click", () => {
-      startHand();
-    });
-
-    el("betStepperUp").addEventListener("click", () => {
-      const maxBet = state.heroStack;
-      state.betSize = Math.min(maxBet, (state.betSize ?? 6) + 2);
-      updateBetStepperDisplay();
-      updatePotOddsDisplay();
-    });
-
-    el("betStepperDown").addEventListener("click", () => {
-      state.betSize = Math.max(6, (state.betSize ?? 6) - 2);
-      updateBetStepperDisplay();
-      updatePotOddsDisplay();
-    });
-
-    el("checkBtn").addEventListener("click", () => {
-      if (state.stage === "idle" || state.stage === "showdown") return;
-      heroActionEl.textContent = "Check";
-      op1ActionEl.textContent = "Check";
-      op2ActionEl.textContent = "Check";
-      recordDecision("check", 0);
-      revealNextStreet();
-    });
-
-    el("betBtn").addEventListener("click", () => {
-      if (state.stage === "idle" || state.stage === "showdown") return;
-      const size = state.betSize ?? 6;
-      const heroBet = takeChips("hero", size);
-      const op1Call = takeChips("op1", heroBet);
-      const op2Call = takeChips("op2", heroBet);
-      state.pot += heroBet + op1Call + op2Call;
-      heroActionEl.textContent = `Bet $${heroBet}`;
-      op1ActionEl.textContent = op1Call === heroBet ? "Call" : `Call $${op1Call}`;
-      op2ActionEl.textContent = op2Call === heroBet ? "Call" : `Call $${op2Call}`;
-      recordDecision("bet", heroBet);
-      revealNextStreet();
-    });
-
-    el("foldBtn").addEventListener("click", () => {
-      if (state.stage === "idle" || state.stage === "showdown") return;
-      heroActionEl.textContent = "Fold";
-      const winKey = (state.blinds?.bbKey && state.blinds.bbKey !== "hero")
-        ? state.blinds.bbKey
-        : (state.blinds?.sbKey && state.blinds.sbKey !== "hero")
-          ? state.blinds.sbKey
-          : "op1";
-      setPlayerAction(winKey, "Wins pot");
-      if (winKey === "op1") op2ActionEl.textContent = "";
-      if (winKey === "op2") op1ActionEl.textContent = "";
-      recordDecision("fold", 0);
-      while (state.community.length < 5 && state.deck.length > 0) {
-        state.community.push(state.deck.shift());
-      }
-      state.stage = "showdown";
-      state.decisions.forEach(evaluateDecision);
-      const heroScore = evaluateHand7(state.heroHand.concat(state.community)).score;
-      const op1Score = evaluateHand7(state.op1Hand.concat(state.community)).score;
-      const op2Score = evaluateHand7(state.op2Hand.concat(state.community)).score;
-      awardChips(winKey, state.pot);
-      state.pot = 0;
-      tutorStageTagEl.innerHTML = `<span class="rec-stage">Hand</span><span class="rec-sep">•</span><span class="rec-label">Result</span><span class="rec-action">Folded</span>`;
-      handResultBannerEl.style.display = "block";
-      handResultBannerEl.className = "hand-result-banner fold";
-      handResultBannerEl.textContent = "You folded";
-      tutorTextEl.innerHTML = "<p>Review your decisions below – each is rated Good or Poor based on your equity at that moment.</p>";
-      setButtonsForStage();
-      renderHands();
-      setShowdownUI({ heroScore, op1Score, op2Score, forcedWinners: [winKey] });
-      renderDecisions();
-    });
-
-    // Initial render
-    renderHands();
-    renderWinProb();
-    renderDecisions();
-    setButtonsForStage();
-  </script>
 </body>
 </html>
